@@ -152,7 +152,7 @@
 
 <header>
   <h1>🗓️ 지우 시간표</h1>
-  <p>학교 · 학원 주간 일정</p>
+  <p>학교 · 학원 주간 일정 (구글 연동됨)</p>
 </header>
 
 <div class="controls">
@@ -166,7 +166,7 @@
     <span>📌 공지사항</span>
     <button class="edit-notice-btn" onclick="openNoticeEdit()">✏️ 수정</button>
   </div>
-  <div class="notice-content" id="noticeContent">로딩 중...</div>
+  <div class="notice-content" id="noticeContent">데이터를 불러오는 중입니다...</div>
 </div>
 
 <div class="days-grid" id="schedule"></div>
@@ -204,7 +204,7 @@
 <div class="overlay" id="noticeOverlay">
   <div class="modal">
     <h2>📌 공지사항 수정</h2>
-    <p> 수정사항 작성해주세요 </p>
+    <p>메모를 적고 저장하면 구글 스프레드시트에 저장됩니다!</p>
     <textarea id="editNoticeText" rows="4" placeholder="예: 이번 주 금요일은 단축수업입니다!"></textarea>
     <div class="btn-row">
       <button class="btn-primary" onclick="saveNotice()">저장</button>
@@ -259,6 +259,11 @@
 </div>
 
 <script>
+// ==========================================
+// 🔴 여기에 2단계에서 복사한 구글 웹 앱 URL을 붙여넣으세요! 🔴
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfO0yo7pJMwsxQNRG7UPhmwCnJcF_uuvyGc5aN5E7lRO8ciO3hlyzUFKJaCQJnW-9/exec";
+// ==========================================
+
 const EDIT_PASSWORD = "1234";
 const STORAGE_KEY = "kidSchedule_v3";
 const NOTICE_KEY = "kidNotice_v3";
@@ -300,12 +305,64 @@ const DEFAULT = {
 };
 
 let schedule = JSON.parse(JSON.stringify(DEFAULT));
-let noticeText = "⭐️3/3(화)는 첫날이라 4교시만해서 12:50분에 하교합니다!! 집에 왔다가 2:30 축구셔틀타러 청구 쉼터로 집에서 2:20분쯤 나가기😊";
+let noticeText = "공지사항을 불러오지 못했습니다. 앱스크립트 주소를 확인해 주세요!";
 let editMode = false;
 let editTarget = null;
 let addDay = null;
 let selColor = PALETTE[0];
 let addSelColor = PALETTE[4];
+
+// ── 데이터베이스 로드 ─────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    
+    if(data.notice) {
+      noticeText = data.notice;
+      document.getElementById("noticeContent").textContent = noticeText;
+    } else {
+      document.getElementById("noticeContent").textContent = "아직 등록된 공지사항이 없습니다.";
+    }
+    
+    if(data.schedule) {
+      schedule = JSON.parse(data.schedule);
+    }
+    rerender();
+  } catch(e) {
+    console.error("구글 시트 연동 실패:", e);
+    // 구글 시트 오류 시 임시로 브라우저 데이터라도 보여주기
+    const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r);
+    const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n;
+    document.getElementById("noticeContent").textContent = noticeText;
+    rerender();
+  }
+}
+
+// ── 데이터베이스 저장 ─────────────────────────
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); // 백업용 로컬 저장
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ schedule: schedule })
+  }).then(res => res.json()).then(() => toast("✅ 저장됐어요! (구글 동기화)"));
+}
+
+function saveNotice() {
+  noticeText = document.getElementById("editNoticeText").value;
+  document.getElementById("noticeContent").textContent = noticeText || "공지사항이 없습니다.";
+  localStorage.setItem(NOTICE_KEY, noticeText);
+  
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ notice: noticeText })
+  }).then(res => res.json()).then(() => {
+    closeOverlay("noticeOverlay");
+    toast("✅ 공지사항 업데이트 완료!");
+  });
+}
 
 // ── View Mode ─────────────────────────────────
 let viewMode = "card";
@@ -325,29 +382,31 @@ function renderWeek() {
     const col = document.createElement("div");
     col.className = "week-col" + (editMode?" edit-active":"");
     col.innerHTML = `<div class="week-day-title"><div class="week-badge">${day}</div>${day}요일</div>`;
-    items.forEach((item, idx) => {
-      if (item.type === "school") {
-        const el = document.createElement("div");
-        el.className = "week-school";
-        el.style.background = item.color;
-        el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span style="margin-left:auto;font-size:0.75rem;opacity:0.85">${item.time}</span>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        col.appendChild(el);
-      } else {
-        const el = document.createElement("div");
-        el.className = "week-block";
-        el.style.background = item.color;
-        el.style.color = textColor(item.color);
-        el.innerHTML = `
-          <div class="week-block-top">
-            <span class="week-block-icon">${item.icon}</span>
-            <span class="week-block-name">${item.label}</span>
-          </div>
-          <div class="week-block-time">${item.time}</div>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        col.appendChild(el);
-      }
-    });
+    if(items){
+      items.forEach((item, idx) => {
+        if (item.type === "school") {
+          const el = document.createElement("div");
+          el.className = "week-school";
+          el.style.background = item.color;
+          el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span style="margin-left:auto;font-size:0.75rem;opacity:0.85">${item.time}</span>`;
+          if (editMode) el.onclick = () => openEdit(day, idx);
+          col.appendChild(el);
+        } else {
+          const el = document.createElement("div");
+          el.className = "week-block";
+          el.style.background = item.color;
+          el.style.color = textColor(item.color);
+          el.innerHTML = `
+            <div class="week-block-top">
+              <span class="week-block-icon">${item.icon}</span>
+              <span class="week-block-name">${item.label}</span>
+            </div>
+            <div class="week-block-time">${item.time}</div>`;
+          if (editMode) el.onclick = () => openEdit(day, idx);
+          col.appendChild(el);
+        }
+      });
+    }
     if (editMode) {
       const addBtn = document.createElement("button");
       addBtn.className = "add-btn";
@@ -361,28 +420,6 @@ function renderWeek() {
   renderLegend();
 }
 
-// ── Storage ──────────────────────────────────
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); } catch(e){}
-}
-function load() {
-  try { const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r); } catch(e){}
-  try { const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n; } catch(e){}
-}
-
-// ── Notice Edit ───────────────────────────────
-function openNoticeEdit() {
-  document.getElementById("editNoticeText").value = noticeText;
-  document.getElementById("noticeOverlay").classList.add("show");
-}
-function saveNotice() {
-  noticeText = document.getElementById("editNoticeText").value;
-  document.getElementById("noticeContent").textContent = noticeText || "공지사항이 없습니다.";
-  try { localStorage.setItem(NOTICE_KEY, noticeText); } catch(e){}
-  closeOverlay("noticeOverlay");
-  toast("✅ 공지사항이 저장됐어요!");
-}
-
 // ── Render ────────────────────────────────────
 function lum(hex) {
   const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
@@ -392,8 +429,6 @@ function textColor(hex) { return lum(hex)>0.45?"#222":"white"; }
 
 function rerender() { 
   viewMode==="week" ? renderWeek() : render(); 
-  
-  // 편집 모드에 따라 공지사항 영역 스타일 변경
   if (editMode) document.getElementById("noticeBoard").classList.add("edit-active");
   else document.getElementById("noticeBoard").classList.remove("edit-active");
 }
@@ -406,24 +441,26 @@ function render() {
     card.className = "day-card" + (editMode?" edit-active":"");
     card.innerHTML = `<div class="day-title"><div class="day-badge">${day}</div>${day}요일</div>`;
 
-    items.forEach((item, idx) => {
-      if (item.type === "school") {
-        const el = document.createElement("div");
-        el.className = "school-row";
-        el.style.background = item.color;
-        el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        card.appendChild(el);
-      } else {
-        const el = document.createElement("div");
-        el.className = "block";
-        el.style.background = item.color;
-        el.style.color = textColor(item.color);
-        el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        card.appendChild(el);
-      }
-    });
+    if(items){
+      items.forEach((item, idx) => {
+        if (item.type === "school") {
+          const el = document.createElement("div");
+          el.className = "school-row";
+          el.style.background = item.color;
+          el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
+          if (editMode) el.onclick = () => openEdit(day, idx);
+          card.appendChild(el);
+        } else {
+          const el = document.createElement("div");
+          el.className = "block";
+          el.style.background = item.color;
+          el.style.color = textColor(item.color);
+          el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
+          if (editMode) el.onclick = () => openEdit(day, idx);
+          card.appendChild(el);
+        }
+      });
+    }
 
     const addBtn = document.createElement("button");
     addBtn.className = "add-btn";
@@ -472,6 +509,12 @@ function exitEdit() {
   rerender();
 }
 
+// ── Notice Edit ───────────────────────────────
+function openNoticeEdit() {
+  document.getElementById("editNoticeText").value = noticeText;
+  document.getElementById("noticeOverlay").classList.add("show");
+}
+
 // ── Color Grid ────────────────────────────────
 function buildColors(id, current, cb) {
   const g = document.getElementById(id);
@@ -509,12 +552,12 @@ function saveBlock() {
   item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
   item.color = selColor;
   item.time  = end ? `${start}–${end}` : start;
-  save(); closeOverlay("editOverlay"); rerender(); toast("✅ 저장됐어요!");
+  save(); closeOverlay("editOverlay"); 
 }
 function deleteBlock() {
   if (!editTarget) return;
   schedule[editTarget.day].splice(editTarget.idx, 1);
-  save(); closeOverlay("editOverlay"); rerender(); toast("🗑️ 삭제됐어요!");
+  save(); closeOverlay("editOverlay"); 
 }
 
 // ── Add Block ─────────────────────────────────
@@ -530,9 +573,11 @@ function saveAdd() {
   const icon  = document.getElementById("addIcon").value.trim()||"📌";
   const start = document.getElementById("addStart").value.trim();
   const end   = document.getElementById("addEnd").value.trim();
+  
+  if(!schedule[addDay]) schedule[addDay] = [];
   schedule[addDay].push({ type:name, label:name, icon, color:addSelColor, time:end?`${start}–${end}`:start });
   schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
-  save(); closeOverlay("addOverlay"); rerender(); toast("✅ 추가됐어요!");
+  save(); closeOverlay("addOverlay"); 
 }
 
 // ── Utils ─────────────────────────────────────
@@ -550,9 +595,7 @@ function toast(msg="✅ 저장됐어요!") {
 }
 
 // ── Init ──────────────────────────────────────
-load(); 
-document.getElementById("noticeContent").textContent = noticeText;
-rerender();
+loadData(); // 시작할 때 구글 스프레드시트에서 데이터를 불러옵니다.
 </script>
 </body>
 </html>
