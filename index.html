@@ -204,7 +204,7 @@
 <div class="overlay" id="noticeOverlay">
   <div class="modal">
     <h2>📌 공지사항 수정</h2>
-    <p>⭐️3/3(화)는 첫날이라 4교시만해서 12:50분에 하교합니다!! 집에 왔다가 2:30 축구셔틀타러 청구 쉼터로 집에서 2:20분쯤 나가기⭐️</p>
+    <p> 수정사항 작성해주세요 </p>
     <textarea id="editNoticeText" rows="4" placeholder="예: 이번 주 금요일은 단축수업입니다!"></textarea>
     <div class="btn-row">
       <button class="btn-primary" onclick="saveNotice()">저장</button>
@@ -300,7 +300,7 @@ const DEFAULT = {
 };
 
 let schedule = JSON.parse(JSON.stringify(DEFAULT));
-let noticeText = "여기에 꼭 전하고 싶은 특별한 메모나 공지사항을 적어주세요! 😊";
+let noticeText = "⭐️3/3(화)는 첫날이라 4교시만해서 12:50분에 하교합니다!! 집에 왔다가 2:30 축구셔틀타러 청구 쉼터로 집에서 2:20분쯤 나가기😊";
 let editMode = false;
 let editTarget = null;
 let addDay = null;
