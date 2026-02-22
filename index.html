@@ -7,300 +7,272 @@
 <title>🗓️ 지우 시간표</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Gmarket+Sans:wght@300;500;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f7f3ee; --card:#ffffff; --text:#1a1a2e; --shadow:0 4px 20px rgba(0,0,0,0.08); }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:20px 16px 100px; }
+  :root { --bg:#f7f3ee; --card:#ffffff; --text:#1a1a2e; --shadow:0 4px 20px rgba(0,0,0,0.08); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:20px 16px 100px; }
 
-  header { text-align:center; margin-bottom:24px; }
-  header h1 { font-family:'Gmarket Sans',sans-serif; font-size:2rem; font-weight:700; }
-  header p  { font-size:0.85rem; color:#888; margin-top:4px; }
+  header { text-align:center; margin-bottom:24px; }
+  header h1 { font-family:'Gmarket Sans',sans-serif; font-size:2rem; font-weight:700; }
+  header p  { font-size:0.85rem; color:#888; margin-top:4px; }
 
-  .controls { display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-  .ctrl-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 20px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
-  .ctrl-btn:hover,.ctrl-btn.active { background:var(--text); color:white; border-color:var(--text); }
+  .controls { display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .ctrl-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 20px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
+  .ctrl-btn:hover,.ctrl-btn.active { background:var(--text); color:white; border-color:var(--text); }
 
-  /* ── 공지사항 (Notice Board) ── */
-  .notice-board { background:#fffbea; border:2px dashed #f1c40f; padding:16px 20px; border-radius:16px; margin:0 auto 24px auto; max-width:1200px; box-shadow:var(--shadow); transition:all 0.2s; }
-  .notice-header { font-family:'Gmarket Sans',sans-serif; font-size:1.1rem; color:#d35400; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
-  .notice-content { font-size:0.95rem; line-height:1.6; font-weight:600; color:#444; white-space:pre-wrap; }
-  .edit-notice-btn { display:none; background:var(--text); color:white; border:none; border-radius:8px; padding:6px 12px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:background 0.2s; }
-  .edit-notice-btn:hover { background:#333; }
-  .notice-board.edit-active .edit-notice-btn { display:inline-block; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:24px; }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:600; background:white; padding:5px 12px; border-radius:50px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
 
-  .legend { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:24px; }
-  .legend-item { display:flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:600; background:white; padding:5px 12px; border-radius:50px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-  .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .days-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; max-width:1200px; margin:0 auto; }
+  .day-card { background:var(--card); border-radius:20px; padding:20px; box-shadow:var(--shadow); transition:transform 0.2s; }
+  .day-card:hover { transform:translateY(-2px); }
+  .day-title { font-family:'Gmarket Sans',sans-serif; font-size:1.3rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .day-badge { width:36px; height:36px; border-radius:10px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:900; flex-shrink:0; }
 
-  .days-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; max-width:1200px; margin:0 auto; }
-  .day-card { background:var(--card); border-radius:20px; padding:20px; box-shadow:var(--shadow); transition:transform 0.2s; }
-  .day-card:hover { transform:translateY(-2px); }
-  .day-title { font-family:'Gmarket Sans',sans-serif; font-size:1.3rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-  .day-badge { width:36px; height:36px; border-radius:10px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:900; flex-shrink:0; }
+  .school-row { display:flex; align-items:center; gap:10px; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-weight:700; color:white; position:relative; }
+  .school-row .school-time { font-size:0.9rem; opacity:0.85; margin-left:auto; font-weight:600; }
 
-  .school-row { display:flex; align-items:center; gap:10px; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-weight:700; color:white; position:relative; }
-  .school-row .school-time { font-size:0.9rem; opacity:0.85; margin-left:auto; font-weight:600; }
+  .block { display:flex; align-items:center; gap:12px; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-weight:600; position:relative; overflow:hidden; }
+  .block::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.12); border-radius:inherit; }
+  .block-name { font-size:1rem; font-weight:700; flex:1; position:relative; }
+  .block-time { font-size:0.82rem; opacity:0.9; white-space:nowrap; position:relative; font-weight:600; }
+  .block-icon { font-size:1.1rem; position:relative; }
 
-  .block { display:flex; align-items:center; gap:12px; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-weight:600; position:relative; overflow:hidden; }
-  .block::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.12); border-radius:inherit; }
-  .block-name { font-size:1rem; font-weight:700; flex:1; position:relative; }
-  .block-time { font-size:0.82rem; opacity:0.9; white-space:nowrap; position:relative; font-weight:600; }
-  .block-icon { font-size:1.1rem; position:relative; }
+  /* edit mode hover */
+  .edit-active .block, .edit-active .school-row { cursor:pointer; }
+  .edit-active .block:hover, .edit-active .school-row:hover { filter:brightness(1.1); }
+  .edit-active .add-btn { display:flex !important; }
 
-  /* edit mode hover */
-  .edit-active .block, .edit-active .school-row { cursor:pointer; }
-  .edit-active .block:hover, .edit-active .school-row:hover { filter:brightness(1.1); }
-  .edit-active .add-btn { display:flex !important; }
+  .add-btn { display:none !important; align-items:center; justify-content:center; gap:6px; border:2px dashed rgba(0,0,0,0.2); border-radius:12px; padding:9px 14px; margin-bottom:8px; background:transparent; width:100%; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; color:rgba(0,0,0,0.4); cursor:pointer; transition:all 0.2s; }
+  .add-btn:hover { border-color:rgba(0,0,0,0.5); color:rgba(0,0,0,0.65); }
 
-  .add-btn { display:none !important; align-items:center; justify-content:center; gap:6px; border:2px dashed rgba(0,0,0,0.2); border-radius:12px; padding:9px 14px; margin-bottom:8px; background:transparent; width:100%; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; color:rgba(0,0,0,0.4); cursor:pointer; transition:all 0.2s; }
-  .add-btn:hover { border-color:rgba(0,0,0,0.5); color:rgba(0,0,0,0.65); }
+  /* font sizes */
+  body.size-lg .block-name { font-size:1.25rem; }
+  body.size-lg .block-time { font-size:1rem; }
+  body.size-lg .school-row { font-size:1.1rem; }
+  body.size-lg .day-title  { font-size:1.5rem; }
+  body.size-lg .block { padding:13px 16px; }
+  body.size-xl .block-name { font-size:1.55rem; }
+  body.size-xl .block-time { font-size:1.15rem; }
+  body.size-xl .school-row { font-size:1.25rem; padding:13px 16px; }
+  body.size-xl .day-title  { font-size:1.7rem; }
+  body.size-xl .block { padding:16px 18px; margin-bottom:10px; }
+  body.size-xl .days-grid  { grid-template-columns:1fr; max-width:600px; }
 
-  /* font sizes */
-  body.size-lg .block-name { font-size:1.25rem; }
-  body.size-lg .block-time { font-size:1rem; }
-  body.size-lg .school-row { font-size:1.1rem; }
-  body.size-lg .day-title  { font-size:1.5rem; }
-  body.size-lg .block { padding:13px 16px; }
-  body.size-lg .notice-content { font-size:1.1rem; }
-  
-  body.size-xl .block-name { font-size:1.55rem; }
-  body.size-xl .block-time { font-size:1.15rem; }
-  body.size-xl .school-row { font-size:1.25rem; padding:13px 16px; }
-  body.size-xl .day-title  { font-size:1.7rem; }
-  body.size-xl .block { padding:16px 18px; margin-bottom:10px; }
-  body.size-xl .days-grid  { grid-template-columns:1fr; max-width:600px; }
-  body.size-xl .notice-content { font-size:1.25rem; }
+  @media(max-width:480px){ .days-grid{ grid-template-columns:1fr; } header h1{ font-size:1.6rem; } }
 
-  @media(max-width:480px){ .days-grid{ grid-template-columns:1fr; } header h1{ font-size:1.6rem; } }
+  .edit-fab { position:fixed; bottom:24px; right:24px; width:56px; height:56px; background:var(--text); color:white; border:none; border-radius:50%; font-size:1.4rem; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; transition:all 0.2s; z-index:100; }
+  .edit-fab:hover { transform:scale(1.1); }
+  .edit-fab.active { background:#e74c3c; }
 
-  .edit-fab { position:fixed; bottom:24px; right:24px; width:56px; height:56px; background:var(--text); color:white; border:none; border-radius:50%; font-size:1.4rem; cursor:pointer; box-shadow:0 4px 20px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; transition:all 0.2s; z-index:100; }
-  .edit-fab:hover { transform:scale(1.1); }
-  .edit-fab.active { background:#e74c3c; }
+  .edit-banner { display:none; background:#1a1a2e; color:white; text-align:center; padding:10px; font-size:0.85rem; font-weight:600; position:sticky; top:0; z-index:50; border-radius:0 0 16px 16px; margin-bottom:16px; }
+  .edit-banner.show { display:block; }
+  .edit-banner span { color:#FFD700; }
 
-  .edit-banner { display:none; background:#1a1a2e; color:white; text-align:center; padding:10px; font-size:0.85rem; font-weight:600; position:sticky; top:0; z-index:50; border-radius:0 0 16px 16px; margin-bottom:16px; }
-  .edit-banner.show { display:block; }
-  .edit-banner span { color:#FFD700; }
+  /* modals */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:16px; }
+  .overlay.show { display:flex; }
+  .modal { background:white; border-radius:24px; padding:28px 24px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto; }
+  .modal h2 { font-size:1.2rem; margin-bottom:6px; }
+  .modal > p { font-size:0.83rem; color:#888; margin-bottom:18px; }
+  .modal label { display:block; font-size:0.82rem; font-weight:700; color:#555; margin-bottom:5px; }
+  .modal input { width:100%; border:2px solid #eee; border-radius:12px; padding:11px 14px; font-size:0.95rem; font-family:inherit; outline:none; transition:border 0.2s; margin-bottom:12px; }
+  .modal input:focus { border-color:var(--text); }
+  .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .modal-row > div { display:flex; flex-direction:column; }
+  .modal-row input { margin-bottom:0; }
+  .btn-row { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+  .btn-primary { flex:1; background:var(--text); color:white; border:none; border-radius:12px; padding:13px; font-size:0.95rem; font-family:inherit; font-weight:700; cursor:pointer; }
+  .btn-secondary { flex:1; background:#f0f0f0; color:#555; border:none; border-radius:12px; padding:13px; font-size:0.95rem; font-family:inherit; font-weight:600; cursor:pointer; }
+  .btn-danger { background:#fee; color:#e74c3c; border:none; border-radius:12px; padding:13px 16px; font-size:0.95rem; font-family:inherit; font-weight:600; cursor:pointer; }
+  .error-msg { color:#e74c3c; font-size:0.82rem; margin-top:-8px; margin-bottom:10px; }
 
-  /* modals */
-  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:16px; }
-  .overlay.show { display:flex; }
-  .modal { background:white; border-radius:24px; padding:28px 24px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto; }
-  .modal h2 { font-size:1.2rem; margin-bottom:6px; }
-  .modal > p { font-size:0.83rem; color:#888; margin-bottom:18px; }
-  .modal label { display:block; font-size:0.82rem; font-weight:700; color:#555; margin-bottom:5px; }
-  .modal input, .modal textarea { width:100%; border:2px solid #eee; border-radius:12px; padding:11px 14px; font-size:0.95rem; font-family:inherit; outline:none; transition:border 0.2s; margin-bottom:12px; }
-  .modal input:focus, .modal textarea:focus { border-color:var(--text); }
-  .modal textarea { resize:vertical; }
-  .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
-  .modal-row > div { display:flex; flex-direction:column; }
-  .modal-row input { margin-bottom:0; }
-  .btn-row { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
-  .btn-primary { flex:1; background:var(--text); color:white; border:none; border-radius:12px; padding:13px; font-size:0.95rem; font-family:inherit; font-weight:700; cursor:pointer; }
-  .btn-secondary { flex:1; background:#f0f0f0; color:#555; border:none; border-radius:12px; padding:13px; font-size:0.95rem; font-family:inherit; font-weight:600; cursor:pointer; }
-  .btn-danger { background:#fee; color:#e74c3c; border:none; border-radius:12px; padding:13px 16px; font-size:0.95rem; font-family:inherit; font-weight:600; cursor:pointer; }
-  .error-msg { color:#e74c3c; font-size:0.82rem; margin-top:-8px; margin-bottom:10px; }
+  .color-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:14px; }
+  .color-opt { height:32px; border-radius:8px; border:3px solid transparent; cursor:pointer; transition:transform 0.15s; }
+  .color-opt:hover { transform:scale(1.1); }
+  .color-opt.selected { border-color:#1a1a2e; transform:scale(1.12); }
 
-  .color-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:14px; }
-  .color-opt { height:32px; border-radius:8px; border:3px solid transparent; cursor:pointer; transition:transform 0.15s; }
-  .color-opt:hover { transform:scale(1.1); }
-  .color-opt.selected { border-color:#1a1a2e; transform:scale(1.12); }
+  .save-toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:#2ecc71; color:white; padding:10px 24px; border-radius:50px; font-size:0.9rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:300; white-space:nowrap; }
+  .save-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-  .save-toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:#2ecc71; color:white; padding:10px 24px; border-radius:50px; font-size:0.9rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:300; white-space:nowrap; }
-  .save-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  /* ── VIEW TOGGLE ── */
+  .view-toggle { display:flex; justify-content:center; gap:8px; margin-bottom:20px; }
+  .view-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 22px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
+  .view-btn:hover,.view-btn.active { background:var(--text); color:white; border-color:var(--text); }
 
-  /* ── VIEW TOGGLE ── */
-  .view-toggle { display:flex; justify-content:center; gap:8px; margin-bottom:20px; }
-  .view-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 22px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
-  .view-btn:hover,.view-btn.active { background:var(--text); color:white; border-color:var(--text); }
+  /* ── WEEKLY TABLE VIEW ── */
+  .week-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
+  .week-table { display:grid; grid-template-columns:repeat(5,minmax(160px,1fr)); gap:12px; min-width:820px; max-width:1400px; margin:0 auto; }
+  .week-col { background:var(--card); border-radius:16px; padding:14px 12px; box-shadow:var(--shadow); }
+  .week-day-title { font-family:'Gmarket Sans',sans-serif; font-size:1rem; font-weight:700; text-align:center; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .week-badge { width:28px; height:28px; border-radius:8px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900; flex-shrink:0; }
+  .week-school { display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:7px 10px; margin-bottom:7px; font-weight:700; color:white; font-size:0.82rem; }
+  .week-block { display:flex; flex-direction:column; border-radius:10px; padding:8px 10px; margin-bottom:7px; font-weight:600; position:relative; overflow:hidden; }
+  .week-block::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.12); border-radius:inherit; }
+  .week-block-top { display:flex; align-items:center; gap:5px; position:relative; }
+  .week-block-name { font-size:0.88rem; font-weight:700; flex:1; }
+  .week-block-icon { font-size:0.95rem; }
+  .week-block-time { font-size:0.72rem; opacity:0.85; position:relative; margin-top:3px; font-weight:600; }
+  .edit-active .week-block, .edit-active .week-school { cursor:pointer; }
+  .edit-active .week-block:hover, .edit-active .week-school:hover { filter:brightness(1.1); }
+  body.size-lg .week-block-name { font-size:1rem; }
+  body.size-lg .week-block-time { font-size:0.82rem; }
+  body.size-lg .week-table { grid-template-columns:repeat(5,minmax(190px,1fr)); min-width:980px; }
+  body.size-xl .week-block-name { font-size:1.1rem; }
+  body.size-xl .week-block-time { font-size:0.9rem; }
+  body.size-xl .week-table { grid-template-columns:repeat(5,minmax(220px,1fr)); min-width:1140px; }
 
-  /* ── WEEKLY TABLE VIEW ── */
-  .week-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
-  .week-table { display:grid; grid-template-columns:repeat(5,minmax(160px,1fr)); gap:12px; min-width:820px; max-width:1400px; margin:0 auto; }
-  .week-col { background:var(--card); border-radius:16px; padding:14px 12px; box-shadow:var(--shadow); }
-  .week-day-title { font-family:'Gmarket Sans',sans-serif; font-size:1rem; font-weight:700; text-align:center; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px; }
-  .week-badge { width:28px; height:28px; border-radius:8px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900; flex-shrink:0; }
-  .week-school { display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:7px 10px; margin-bottom:7px; font-weight:700; color:white; font-size:0.82rem; }
-  .week-block { display:flex; flex-direction:column; border-radius:10px; padding:8px 10px; margin-bottom:7px; font-weight:600; position:relative; overflow:hidden; }
-  .week-block::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.12); border-radius:inherit; }
-  .week-block-top { display:flex; align-items:center; gap:5px; position:relative; }
-  .week-block-name { font-size:0.88rem; font-weight:700; flex:1; }
-  .week-block-icon { font-size:0.95rem; }
-  .week-block-time { font-size:0.72rem; opacity:0.85; position:relative; margin-top:3px; font-weight:600; }
-  .edit-active .week-block, .edit-active .week-school { cursor:pointer; }
-  .edit-active .week-block:hover, .edit-active .week-school:hover { filter:brightness(1.1); }
-  body.size-lg .week-block-name { font-size:1rem; }
-  body.size-lg .week-block-time { font-size:0.82rem; }
-  body.size-lg .week-table { grid-template-columns:repeat(5,minmax(190px,1fr)); min-width:980px; }
-  body.size-xl .week-block-name { font-size:1.1rem; }
-  body.size-xl .week-block-time { font-size:0.9rem; }
-  body.size-xl .week-table { grid-template-columns:repeat(5,minmax(220px,1fr)); min-width:1140px; }
+  /* ── BOTTOM BAR ── */
+  .bottom-bar { margin-top:36px; padding:24px 16px 16px; border-top:2px solid rgba(0,0,0,0.07); max-width:1200px; margin-left:auto; margin-right:auto; }
+  .bottom-bar .view-toggle { margin-bottom:16px; }
 
-  /* ── BOTTOM BAR ── */
-  .bottom-bar { margin-top:36px; padding:24px 16px 16px; border-top:2px solid rgba(0,0,0,0.07); max-width:1200px; margin-left:auto; margin-right:auto; }
-  .bottom-bar .view-toggle { margin-bottom:16px; }
-
-  /* ── size-xl TIME 2x ── */
-  body.size-xl .block-time { font-size:1.4rem !important; }
-  body.size-xl .school-row .school-time { font-size:1.4rem !important; }
-  body.size-xl .week-block-time { font-size:1.3rem !important; }
+  /* ── size-xl TIME 2x ── */
+  body.size-xl .block-time { font-size:1.4rem !important; }
+  body.size-xl .school-row .school-time { font-size:1.4rem !important; }
+  body.size-xl .week-block-time { font-size:1.3rem !important; }
 </style>
 </head>
 <body>
 
 <div class="edit-banner" id="editBanner">
-  ✏️ 편집 모드 활성화 &mdash; 블록을 눌러 수정하거나 <span>+ 일정 추가</span> 버튼을 사용하세요 &nbsp;|&nbsp; <a href="#" onclick="exitEdit();return false;" style="color:#FF6B6B;text-decoration:none;font-weight:700;">🔒 잠금</a>
+  ✏️ 편집 모드 활성화 &mdash; 블록을 눌러 수정하거나 <span>+ 일정 추가</span> 버튼을 사용하세요 &nbsp;|&nbsp; <a href="#" onclick="exitEdit();return false;" style="color:#FF6B6B;text-decoration:none;font-weight:700;">🔒 잠금</a>
 </div>
 
 <header>
-  <h1>🗓️ 지우 시간표</h1>
-  <p>학교 · 학원 주간 일정</p>
+  <h1>🗓️ 지우 시간표</h1>
+  <p>학교 · 학원 주간 일정</p>
 </header>
 
 <div class="controls">
-  <button class="ctrl-btn active" onclick="setSize('normal',this)">보통</button>
-  <button class="ctrl-btn" onclick="setSize('lg',this)">크게 🔍</button>
-  <button class="ctrl-btn" onclick="setSize('xl',this)">매우 크게 👴👵</button>
+  <button class="ctrl-btn active" onclick="setSize('normal',this)">보통</button>
+  <button class="ctrl-btn" onclick="setSize('lg',this)">크게 🔍</button>
+  <button class="ctrl-btn" onclick="setSize('xl',this)">매우 크게 👴👵</button>
 </div>
 
-<div class="notice-board" id="noticeBoard">
-  <div class="notice-header">
-    <span>📌 공지사항</span>
-    <button class="edit-notice-btn" onclick="openNoticeEdit()">✏️ 수정</button>
-  </div>
-  <div class="notice-content" id="noticeContent">로딩 중...</div>
-</div>
-
+<!-- Card view -->
 <div class="days-grid" id="schedule"></div>
 
+<!-- Weekly view -->
 <div class="week-wrap" id="weekWrap" style="display:none">
-  <div class="week-table" id="weekTable"></div>
+  <div class="week-table" id="weekTable"></div>
 </div>
 
+<!-- Bottom controls -->
 <div class="bottom-bar">
-  <div class="view-toggle">
-    <button class="view-btn active" id="vCard" onclick="setView('card',this)">📋 카드 보기</button>
-    <button class="view-btn" id="vWeek" onclick="setView('week',this)">📅 한눈에 보기</button>
-  </div>
-  <div class="legend" id="legend"></div>
+  <div class="view-toggle">
+    <button class="view-btn active" id="vCard" onclick="setView('card',this)">📋 카드 보기</button>
+    <button class="view-btn" id="vWeek" onclick="setView('week',this)">📅 한눈에 보기</button>
+  </div>
+  <div class="legend" id="legend"></div>
 </div>
 
 <div class="save-toast" id="toast">✅ 저장됐어요!</div>
 
 <button class="edit-fab" id="editFab" onclick="toggleEdit()" title="편집">✏️</button>
 
+<!-- PW MODAL -->
 <div class="overlay" id="pwOverlay">
-  <div class="modal">
-    <h2>🔐 편집 모드</h2>
-    <p>부모님 전용 비밀번호를 입력해 주세요</p>
-    <label>비밀번호</label>
-    <input type="password" id="pwInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')checkPw()">
-    <div class="error-msg" id="pwError"></div>
-    <div class="btn-row">
-      <button class="btn-primary" onclick="checkPw()">확인</button>
-      <button class="btn-secondary" onclick="closeOverlay('pwOverlay')">취소</button>
-    </div>
-  </div>
+  <div class="modal">
+    <h2>🔐 편집 모드</h2>
+    <p>부모님 전용 비밀번호를 입력해 주세요</p>
+    <label>비밀번호</label>
+    <input type="password" id="pwInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="error-msg" id="pwError"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="checkPw()">확인</button>
+      <button class="btn-secondary" onclick="closeOverlay('pwOverlay')">취소</button>
+    </div>
+  </div>
 </div>
 
-<div class="overlay" id="noticeOverlay">
-  <div class="modal">
-    <h2>📌 공지사항 수정</h2>
-    <p>메모할 내용을 자유롭게 적어주세요</p>
-    <textarea id="editNoticeText" rows="4" placeholder="예: 이번 주 금요일은 단축수업입니다!"></textarea>
-    <div class="btn-row">
-      <button class="btn-primary" onclick="saveNotice()">저장</button>
-      <button class="btn-secondary" onclick="closeOverlay('noticeOverlay')">취소</button>
-    </div>
-  </div>
-</div>
-
+<!-- EDIT MODAL -->
 <div class="overlay" id="editOverlay">
-  <div class="modal">
-    <h2>✏️ 일정 수정</h2>
-    <p>내용을 변경하고 저장하세요</p>
-    <label>활동 이름</label>
-    <input type="text" id="editName" placeholder="예: 영어">
-    <label>아이콘 (이모지)</label>
-    <input type="text" id="editIcon" placeholder="예: 📚">
-    <label>시간</label>
-    <div class="modal-row">
-      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">시작</label><input type="text" id="editStart" placeholder="1:30"></div>
-      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">종료</label><input type="text" id="editEnd" placeholder="2:30 (없으면 빈칸)"></div>
-    </div>
-    <label>색상</label>
-    <div class="color-grid" id="colorGrid"></div>
-    <div class="btn-row">
-      <button class="btn-primary" onclick="saveBlock()">저장</button>
-      <button class="btn-danger" onclick="deleteBlock()">삭제</button>
-      <button class="btn-secondary" onclick="closeOverlay('editOverlay')">취소</button>
-    </div>
-  </div>
+  <div class="modal">
+    <h2>✏️ 일정 수정</h2>
+    <p>내용을 변경하고 저장하세요</p>
+    <label>활동 이름</label>
+    <input type="text" id="editName" placeholder="예: 영어">
+    <label>아이콘 (이모지)</label>
+    <input type="text" id="editIcon" placeholder="예: 📚">
+    <label>시간</label>
+    <div class="modal-row">
+      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">시작</label><input type="text" id="editStart" placeholder="1:30"></div>
+      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">종료</label><input type="text" id="editEnd" placeholder="2:30 (없으면 빈칸)"></div>
+    </div>
+    <label>색상</label>
+    <div class="color-grid" id="colorGrid"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveBlock()">저장</button>
+      <button class="btn-danger" onclick="deleteBlock()">삭제</button>
+      <button class="btn-secondary" onclick="closeOverlay('editOverlay')">취소</button>
+    </div>
+  </div>
 </div>
 
+<!-- ADD MODAL -->
 <div class="overlay" id="addOverlay">
-  <div class="modal">
-    <h2>➕ 일정 추가</h2>
-    <p>새 일정 정보를 입력해 주세요</p>
-    <label>활동 이름</label>
-    <input type="text" id="addName" placeholder="예: 피아노">
-    <label>아이콘 (이모지)</label>
-    <input type="text" id="addIcon" placeholder="예: 🎹">
-    <label>시간</label>
-    <div class="modal-row">
-      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">시작</label><input type="text" id="addStart" placeholder="3:00"></div>
-      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">종료</label><input type="text" id="addEnd" placeholder="4:00"></div>
-    </div>
-    <label>색상</label>
-    <div class="color-grid" id="addColorGrid"></div>
-    <div class="btn-row">
-      <button class="btn-primary" onclick="saveAdd()">추가</button>
-      <button class="btn-secondary" onclick="closeOverlay('addOverlay')">취소</button>
-    </div>
-  </div>
+  <div class="modal">
+    <h2>➕ 일정 추가</h2>
+    <p>새 일정 정보를 입력해 주세요</p>
+    <label>활동 이름</label>
+    <input type="text" id="addName" placeholder="예: 피아노">
+    <label>아이콘 (이모지)</label>
+    <input type="text" id="addIcon" placeholder="예: 🎹">
+    <label>시간</label>
+    <div class="modal-row">
+      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">시작</label><input type="text" id="addStart" placeholder="3:00"></div>
+      <div><label style="font-size:0.75rem;color:#999;margin-bottom:4px">종료</label><input type="text" id="addEnd" placeholder="4:00"></div>
+    </div>
+    <label>색상</label>
+    <div class="color-grid" id="addColorGrid"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveAdd()">추가</button>
+      <button class="btn-secondary" onclick="closeOverlay('addOverlay')">취소</button>
+    </div>
+  </div>
 </div>
 
 <script>
 const EDIT_PASSWORD = "1234";
 const STORAGE_KEY = "kidSchedule_v3";
-const NOTICE_KEY = "kidNotice_v3";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
 
 const DEFAULT = {
-  "월":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"english",  time:"1:40–2:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"math",     time:"2:50–4:30", label:"수학",      icon:"📐", color:"#45B7D1"},
-    {type:"home",     time:"4:30–5:15", label:"집",      icon:"🏠", color:"#b2bec3"},
-    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "화":[
-    {type:"school",   time:"2:20",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"soccer",   time:"2:30–3:55", label:"축구",      icon:"⚽", color:"#26de81"},
-    {type:"english",  time:"4:00–5:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "수":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"violin",   time:"1:40–2:30", label:"바이올린",  icon:"🎻", color:"#a29bfe"},
-    {type:"english",  time:"2:40–3:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"taekwondo",time:"4:30–5:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "목":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"english",  time:"1:40–3:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"hanuri",   time:"3:10–4:30", label:"한우리논술", icon:"📝", color:"#fd79a8"},
-    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "금":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"english",  time:"1:40–2:45", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"art",      time:"3:00–4:20", label:"미술",      icon:"🎨", color:"#e17055"},
-    {type:"home",     time:"4:30–5:40", label:"집",        icon:"🏠", color:"#b2bec3"},
-    {type:"swim",     time:"5:45–7:00", label:"수영",      icon:"🏊", color:"#00cec9"},
-  ],
+  "월":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"english",  time:"1:40–2:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"math",     time:"2:50–4:30", label:"수학",      icon:"📐", color:"#45B7D1"},
+    {type:"home",     time:"4:30–5:15", label:"집",     icon:"🏠", color:"#b2bec3"},
+    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "화":[
+    {type:"school",   time:"2:20",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"soccer",   time:"2:30–3:55", label:"축구",      icon:"⚽", color:"#26de81"},
+    {type:"english",  time:"4:00–5:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "수":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"violin",   time:"1:40–2:30", label:"바이올린",  icon:"🎻", color:"#a29bfe"},
+    {type:"english",  time:"2:40–3:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"taekwondo",time:"4:30–5:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "목":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"english",  time:"1:40–3:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"hanuri",   time:"3:10–4:30", label:"한우리논술", icon:"📝", color:"#fd79a8"},
+    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "금":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"english",  time:"1:40–2:45", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"art",      time:"3:00–4:20", label:"미술",      icon:"🎨", color:"#e17055"},
+    {type:"home",     time:"4:30–5:40", label:"집",        icon:"🏠", color:"#b2bec3"},
+    {type:"swim",     time:"5:45–7:00", label:"수영",      icon:"🏊", color:"#00cec9"},
+  ],
 };
 
 let schedule = JSON.parse(JSON.stringify(DEFAULT));
-let noticeText = "여기에 꼭 전하고 싶은 특별한 메모나 공지사항을 적어주세요! 😊";
 let editMode = false;
 let editTarget = null;
 let addDay = null;
@@ -310,249 +282,227 @@ let addSelColor = PALETTE[4];
 // ── View Mode ─────────────────────────────────
 let viewMode = "card";
 function setView(mode, btn) {
-  viewMode = mode;
-  document.querySelectorAll(".view-btn").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("schedule").style.display = mode==="card" ? "" : "none";
-  document.getElementById("weekWrap").style.display  = mode==="week" ? "" : "none";
-  rerender();
+  viewMode = mode;
+  document.querySelectorAll(".view-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("schedule").style.display = mode==="card" ? "" : "none";
+  document.getElementById("weekWrap").style.display  = mode==="week" ? "" : "none";
+  mode==="week" ? renderWeek() : render();
 }
 
 function renderWeek() {
-  const tbl = document.getElementById("weekTable");
-  tbl.innerHTML = "";
-  Object.entries(schedule).forEach(([day, items]) => {
-    const col = document.createElement("div");
-    col.className = "week-col" + (editMode?" edit-active":"");
-    col.innerHTML = `<div class="week-day-title"><div class="week-badge">${day}</div>${day}요일</div>`;
-    items.forEach((item, idx) => {
-      if (item.type === "school") {
-        const el = document.createElement("div");
-        el.className = "week-school";
-        el.style.background = item.color;
-        el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span style="margin-left:auto;font-size:0.75rem;opacity:0.85">${item.time}</span>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        col.appendChild(el);
-      } else {
-        const el = document.createElement("div");
-        el.className = "week-block";
-        el.style.background = item.color;
-        el.style.color = textColor(item.color);
-        el.innerHTML = `
-          <div class="week-block-top">
-            <span class="week-block-icon">${item.icon}</span>
-            <span class="week-block-name">${item.label}</span>
-          </div>
-          <div class="week-block-time">${item.time}</div>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        col.appendChild(el);
-      }
-    });
-    if (editMode) {
-      const addBtn = document.createElement("button");
-      addBtn.className = "add-btn";
-      addBtn.style.display = "flex";
-      addBtn.textContent = "+ 추가";
-      addBtn.onclick = () => openAdd(day);
-      col.appendChild(addBtn);
-    }
-    tbl.appendChild(col);
-  });
-  renderLegend();
+  const tbl = document.getElementById("weekTable");
+  tbl.innerHTML = "";
+  Object.entries(schedule).forEach(([day, items]) => {
+    const col = document.createElement("div");
+    col.className = "week-col" + (editMode?" edit-active":"");
+    col.innerHTML = `<div class="week-day-title"><div class="week-badge">${day}</div>${day}요일</div>`;
+    items.forEach((item, idx) => {
+      if (item.type === "school") {
+        const el = document.createElement("div");
+        el.className = "week-school";
+        el.style.background = item.color;
+        el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span style="margin-left:auto;font-size:0.75rem;opacity:0.85">${item.time}</span>`;
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        col.appendChild(el);
+      } else {
+        const el = document.createElement("div");
+        el.className = "week-block";
+        el.style.background = item.color;
+        el.style.color = textColor(item.color);
+        el.innerHTML = `
+          <div class="week-block-top">
+            <span class="week-block-icon">${item.icon}</span>
+            <span class="week-block-name">${item.label}</span>
+          </div>
+          <div class="week-block-time">${item.time}</div>`;
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        col.appendChild(el);
+      }
+    });
+    if (editMode) {
+      const addBtn = document.createElement("button");
+      addBtn.className = "add-btn";
+      addBtn.style.display = "flex";
+      addBtn.textContent = "+ 추가";
+      addBtn.onclick = () => openAdd(day);
+      col.appendChild(addBtn);
+    }
+    tbl.appendChild(col);
+  });
+  renderLegend();
 }
 
 // ── Storage ──────────────────────────────────
 function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); } catch(e){}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); } catch(e){}
 }
 function load() {
-  try { const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r); } catch(e){}
-  try { const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n; } catch(e){}
-}
-
-// ── Notice Edit ───────────────────────────────
-function openNoticeEdit() {
-  document.getElementById("editNoticeText").value = noticeText;
-  document.getElementById("noticeOverlay").classList.add("show");
-}
-function saveNotice() {
-  noticeText = document.getElementById("editNoticeText").value;
-  document.getElementById("noticeContent").textContent = noticeText || "공지사항이 없습니다.";
-  try { localStorage.setItem(NOTICE_KEY, noticeText); } catch(e){}
-  closeOverlay("noticeOverlay");
-  toast("✅ 공지사항이 저장됐어요!");
+  try { const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r); } catch(e){}
 }
 
 // ── Render ────────────────────────────────────
 function lum(hex) {
-  const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
-  return 0.299*r+0.587*g+0.114*b;
+  const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+  return 0.299*r+0.587*g+0.114*b;
 }
 function textColor(hex) { return lum(hex)>0.45?"#222":"white"; }
 
-function rerender() { 
-  viewMode==="week" ? renderWeek() : render(); 
-  
-  // 편집 모드에 따라 공지사항 영역 스타일 변경
-  if (editMode) document.getElementById("noticeBoard").classList.add("edit-active");
-  else document.getElementById("noticeBoard").classList.remove("edit-active");
-}
+function rerender() { viewMode==="week" ? renderWeek() : render(); }
 
 function render() {
-  const grid = document.getElementById("schedule");
-  grid.innerHTML = "";
-  Object.entries(schedule).forEach(([day, items]) => {
-    const card = document.createElement("div");
-    card.className = "day-card" + (editMode?" edit-active":"");
-    card.innerHTML = `<div class="day-title"><div class="day-badge">${day}</div>${day}요일</div>`;
+  const grid = document.getElementById("schedule");
+  grid.innerHTML = "";
+  Object.entries(schedule).forEach(([day, items]) => {
+    const card = document.createElement("div");
+    card.className = "day-card" + (editMode?" edit-active":"");
+    card.innerHTML = `<div class="day-title"><div class="day-badge">${day}</div>${day}요일</div>`;
 
-    items.forEach((item, idx) => {
-      if (item.type === "school") {
-        const el = document.createElement("div");
-        el.className = "school-row";
-        el.style.background = item.color;
-        el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        card.appendChild(el);
-      } else {
-        const el = document.createElement("div");
-        el.className = "block";
-        el.style.background = item.color;
-        el.style.color = textColor(item.color);
-        el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        card.appendChild(el);
-      }
-    });
+    items.forEach((item, idx) => {
+      if (item.type === "school") {
+        const el = document.createElement("div");
+        el.className = "school-row";
+        el.style.background = item.color;
+        el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        card.appendChild(el);
+      } else {
+        const el = document.createElement("div");
+        el.className = "block";
+        el.style.background = item.color;
+        el.style.color = textColor(item.color);
+        el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        card.appendChild(el);
+      }
+    });
 
-    const addBtn = document.createElement("button");
-    addBtn.className = "add-btn";
-    addBtn.textContent = "+ 일정 추가";
-    addBtn.onclick = () => openAdd(day);
-    card.appendChild(addBtn);
-    grid.appendChild(card);
-  });
-  renderLegend();
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-btn";
+    addBtn.textContent = "+ 일정 추가";
+    addBtn.onclick = () => openAdd(day);
+    card.appendChild(addBtn);
+    grid.appendChild(card);
+  });
+  renderLegend();
 }
 
 function renderLegend() {
-  const seen = new Map();
-  Object.values(schedule).flat().forEach(i => { if(!seen.has(i.label)) seen.set(i.label,i.color); });
-  const leg = document.getElementById("legend");
-  leg.innerHTML = "";
-  seen.forEach((c,l) => { leg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`; });
+  const seen = new Map();
+  Object.values(schedule).flat().forEach(i => { if(!seen.has(i.label)) seen.set(i.label,i.color); });
+  const leg = document.getElementById("legend");
+  leg.innerHTML = "";
+  seen.forEach((c,l) => { leg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`; });
 }
 
 // ── Edit Mode ─────────────────────────────────
 function toggleEdit() {
-  if (!editMode) {
-    document.getElementById("pwOverlay").classList.add("show");
-    document.getElementById("pwInput").value = "";
-    document.getElementById("pwError").textContent = "";
-    setTimeout(()=>document.getElementById("pwInput").focus(),100);
-  } else exitEdit();
+  if (!editMode) {
+    document.getElementById("pwOverlay").classList.add("show");
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwError").textContent = "";
+    setTimeout(()=>document.getElementById("pwInput").focus(),100);
+  } else exitEdit();
 }
 function checkPw() {
-  if (document.getElementById("pwInput").value === EDIT_PASSWORD) {
-    closeOverlay("pwOverlay");
-    editMode = true;
-    document.getElementById("editBanner").classList.add("show");
-    document.getElementById("editFab").classList.add("active");
-    document.getElementById("editFab").textContent = "🔒";
-    rerender();
-  } else {
-    document.getElementById("pwError").textContent = "❌ 비밀번호가 틀렸습니다";
-  }
+  if (document.getElementById("pwInput").value === EDIT_PASSWORD) {
+    closeOverlay("pwOverlay");
+    editMode = true;
+    document.getElementById("editBanner").classList.add("show");
+    document.getElementById("editFab").classList.add("active");
+    document.getElementById("editFab").textContent = "🔒";
+    rerender();
+  } else {
+    document.getElementById("pwError").textContent = "❌ 비밀번호가 틀렸습니다";
+  }
 }
 function exitEdit() {
-  editMode = false;
-  document.getElementById("editBanner").classList.remove("show");
-  document.getElementById("editFab").classList.remove("active");
-  document.getElementById("editFab").textContent = "✏️";
-  rerender();
+  editMode = false;
+  document.getElementById("editBanner").classList.remove("show");
+  document.getElementById("editFab").classList.remove("active");
+  document.getElementById("editFab").textContent = "✏️";
+  rerender();
 }
 
 // ── Color Grid ────────────────────────────────
 function buildColors(id, current, cb) {
-  const g = document.getElementById(id);
-  g.innerHTML = "";
-  PALETTE.forEach(c => {
-    const d = document.createElement("div");
-    d.className = "color-opt"+(c===current?" selected":"");
-    d.style.background = c;
-    d.onclick = () => { g.querySelectorAll(".color-opt").forEach(x=>x.classList.remove("selected")); d.classList.add("selected"); cb(c); };
-    g.appendChild(d);
-  });
+  const g = document.getElementById(id);
+  g.innerHTML = "";
+  PALETTE.forEach(c => {
+    const d = document.createElement("div");
+    d.className = "color-opt"+(c===current?" selected":"");
+    d.style.background = c;
+    d.onclick = () => { g.querySelectorAll(".color-opt").forEach(x=>x.classList.remove("selected")); d.classList.add("selected"); cb(c); };
+    g.appendChild(d);
+  });
 }
 
 // ── Edit Block ────────────────────────────────
 function openEdit(day, idx) {
-  editTarget = {day, idx};
-  const item = schedule[day][idx];
-  selColor = item.color;
-  document.getElementById("editName").value  = item.label;
-  document.getElementById("editIcon").value  = item.icon;
-  const parts = item.time.split("–");
-  document.getElementById("editStart").value = parts[0]||"";
-  document.getElementById("editEnd").value   = parts[1]||"";
-  buildColors("colorGrid", selColor, c=>{ selColor=c; });
-  document.getElementById("editOverlay").classList.add("show");
+  editTarget = {day, idx};
+  const item = schedule[day][idx];
+  selColor = item.color;
+  document.getElementById("editName").value  = item.label;
+  document.getElementById("editIcon").value  = item.icon;
+  const parts = item.time.split("–");
+  document.getElementById("editStart").value = parts[0]||"";
+  document.getElementById("editEnd").value   = parts[1]||"";
+  buildColors("colorGrid", selColor, c=>{ selColor=c; });
+  document.getElementById("editOverlay").classList.add("show");
 }
 function saveBlock() {
-  if (!editTarget) return;
-  const item = schedule[editTarget.day][editTarget.idx];
-  const name  = document.getElementById("editName").value.trim();
-  if (!name) return;
-  const start = document.getElementById("editStart").value.trim();
-  const end   = document.getElementById("editEnd").value.trim();
-  item.label = name;
-  item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
-  item.color = selColor;
-  item.time  = end ? `${start}–${end}` : start;
-  save(); closeOverlay("editOverlay"); rerender(); toast("✅ 저장됐어요!");
+  if (!editTarget) return;
+  const item = schedule[editTarget.day][editTarget.idx];
+  const name  = document.getElementById("editName").value.trim();
+  if (!name) return;
+  const start = document.getElementById("editStart").value.trim();
+  const end   = document.getElementById("editEnd").value.trim();
+  item.label = name;
+  item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
+  item.color = selColor;
+  item.time  = end ? `${start}–${end}` : start;
+  save(); closeOverlay("editOverlay"); rerender(); toast("✅ 저장됐어요!");
 }
 function deleteBlock() {
-  if (!editTarget) return;
-  schedule[editTarget.day].splice(editTarget.idx, 1);
-  save(); closeOverlay("editOverlay"); rerender(); toast("🗑️ 삭제됐어요!");
+  if (!editTarget) return;
+  schedule[editTarget.day].splice(editTarget.idx, 1);
+  save(); closeOverlay("editOverlay"); rerender(); toast("🗑️ 삭제됐어요!");
 }
 
 // ── Add Block ─────────────────────────────────
 function openAdd(day) {
-  addDay = day; addSelColor = PALETTE[4];
-  ["addName","addIcon","addStart","addEnd"].forEach(id=>document.getElementById(id).value="");
-  buildColors("addColorGrid", addSelColor, c=>{ addSelColor=c; });
-  document.getElementById("addOverlay").classList.add("show");
+  addDay = day; addSelColor = PALETTE[4];
+  ["addName","addIcon","addStart","addEnd"].forEach(id=>document.getElementById(id).value="");
+  buildColors("addColorGrid", addSelColor, c=>{ addSelColor=c; });
+  document.getElementById("addOverlay").classList.add("show");
 }
 function saveAdd() {
-  const name  = document.getElementById("addName").value.trim();
-  if (!name) return;
-  const icon  = document.getElementById("addIcon").value.trim()||"📌";
-  const start = document.getElementById("addStart").value.trim();
-  const end   = document.getElementById("addEnd").value.trim();
-  schedule[addDay].push({ type:name, label:name, icon, color:addSelColor, time:end?`${start}–${end}`:start });
-  schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
-  save(); closeOverlay("addOverlay"); rerender(); toast("✅ 추가됐어요!");
+  const name  = document.getElementById("addName").value.trim();
+  if (!name) return;
+  const icon  = document.getElementById("addIcon").value.trim()||"📌";
+  const start = document.getElementById("addStart").value.trim();
+  const end   = document.getElementById("addEnd").value.trim();
+  schedule[addDay].push({ type:name, label:name, icon, color:addSelColor, time:end?`${start}–${end}`:start });
+  schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
+  save(); closeOverlay("addOverlay"); rerender(); toast("✅ 추가됐어요!");
 }
 
 // ── Utils ─────────────────────────────────────
 function t2m(t) { const s=t.split("–")[0],[h,m]=s.split(":").map(Number); return (h||0)*60+(m||0); }
 function closeOverlay(id) { document.getElementById(id).classList.remove("show"); }
 function setSize(s, btn) {
-  document.body.classList.remove("size-lg","size-xl");
-  if(s!=="normal") document.body.classList.add("size-"+s);
-  document.querySelectorAll(".ctrl-btn").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
+  document.body.classList.remove("size-lg","size-xl");
+  if(s!=="normal") document.body.classList.add("size-"+s);
+  document.querySelectorAll(".ctrl-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
 }
 function toast(msg="✅ 저장됐어요!") {
-  const t=document.getElementById("toast"); t.textContent=msg;
-  t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200);
+  const t=document.getElementById("toast"); t.textContent=msg;
+  t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200);
 }
 
 // ── Init ──────────────────────────────────────
-load(); 
-document.getElementById("noticeContent").textContent = noticeText;
-rerender();
+load(); render();
 </script>
 </body>
 </html>
