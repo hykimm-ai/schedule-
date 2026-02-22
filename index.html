@@ -151,6 +151,7 @@
   <button class="ctrl-btn active" onclick="setSize('normal',this)">보통</button>
   <button class="ctrl-btn" onclick="setSize('lg',this)">크게 🔍</button>
   <button class="ctrl-btn" onclick="setSize('xl',this)">매우 크게 👴👵</button>
+  <button class="ctrl-btn" onclick="syncAllToCalendar()" style="background:#e74c3c; color:white; border:none; margin-left:10px;">🔔 최초 캘린더 전체 등록</button>
 </div>
 
 <div class="notice-board" id="noticeBoard">
@@ -257,12 +258,11 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGBOTSkmx8f1MWxI5v
 // ==========================================
 
 const EDIT_PASSWORD = "1234";
-const STORAGE_KEY = "kidSchedule_v5"; // 데이터 초기화 방지 및 기존 뼈대 로드를 위해 v5로 변경
+const STORAGE_KEY = "kidSchedule_v5"; 
 const NOTICE_KEY = "kidNotice_v5";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
 const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 📌 기존에 설정하셨던 시간표 데이터를 그대로 복구했습니다.
 const DEFAULT = {
   "월":[
     {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
@@ -306,428 +306,51 @@ let addDay = null;
 let selColor = PALETTE[0];
 let addSelColor = PALETTE[4];
 
-function updateHeaderDate() {
-  const now = new Date();
-  const m = now.getMonth() + 1;
-  const d = now.getDate();
-  const dayStr = dayNames[now.getDay()];
-  // 📌 연도 제외, "월 일 요일" 만 표기되도록 수정
-  document.getElementById("headerDate").innerHTML = `📅 오늘: ${m}월 ${d}일 (${dayStr}요일)`;
-}
+// 📌 캘린더 최초 전체 동기화 함수
+async function syncAllToCalendar() {
+  if(!confirm("현재 화면에 보이는 모든 시간표 일정을 구글 캘린더에 '최초 등록' 하시겠습니까?\n\n💡 (이미 등록된 일정은 제외하고 등록됩니다. 10~20초 정도 시간이 소요될 수 있습니다.)")) return;
 
-function getSortedDays() {
-  const now = new Date();
-  const actualDay = now.getDay();
+  toast("⏳ 캘린더에 전체 등록 중입니다... (약 10~20초 소요)");
+
+  let addedCount = 0;
   
-  let todayIdx = actualDay;
-  let daysToOffset = 0;
-  
-  if (actualDay === 0) { todayIdx = 1; daysToOffset = 1; }
-  else if (actualDay === 6) { todayIdx = 1; daysToOffset = 2; }
-  
-  const order = [];
-  const dateMap = {};
-  const targetDays = [1, 2, 3, 4, 5];
-  
-  targetDays.sort((a, b) => {
-    let distA = a >= todayIdx ? a - todayIdx : a - todayIdx + 7;
-    let distB = b >= todayIdx ? b - todayIdx : b - todayIdx + 7;
-    return distA - distB;
-  });
-  
-  targetDays.forEach(d => {
-    let dist = d >= todayIdx ? d - todayIdx : d - todayIdx + 7;
-    let targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + daysToOffset + dist);
-    
-    let dayStr = dayNames[d];
-    order.push(dayStr);
-    
-    let isToday = (dist === 0 && actualDay !== 0 && actualDay !== 6);
-    dateMap[dayStr] = { 
-      text: `${targetDate.getMonth()+1}/${targetDate.getDate()}`,
-      isToday: isToday
-    };
-  });
-  
-  return { order, dateMap };
-}
+  // 월요일부터 금요일까지 모든 일정 순회
+  for (let i = 0; i < dayNames.length; i++) {
+    let day = dayNames[i];
+    if (!schedule[day]) continue;
+    let dayIndex = i;
 
-async function loadData() {
-  try {
-    const res = await fetch(SCRIPT_URL);
-    const data = await res.json();
-    
-    if(data.notice) {
-      noticeText = data.notice;
-      document.getElementById("noticeContent").textContent = noticeText;
-    } else {
-      document.getElementById("noticeContent").textContent = "아직 등록된 공지사항이 없습니다.";
-    }
-    
-    if(data.schedule) schedule = JSON.parse(data.schedule);
-    rerender();
-  } catch(e) {
-    console.error("구글 시트 연동 실패:", e);
-    const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r);
-    const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n;
-    document.getElementById("noticeContent").textContent = noticeText;
-    rerender();
-  }
-}
+    for (let j = 0; j < schedule[day].length; j++) {
+      let item = schedule[day][j];
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); 
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ schedule: schedule })
-  }).then(res => res.json()).then(() => toast("✅ 저장됐어요! (구글 동기화)"));
-}
+      // 이미 캘린더 ID가 있으면(=등록된 일정이면) 건너뛰기
+      if (item.eventId) continue;
 
-function saveNotice() {
-  noticeText = document.getElementById("editNoticeText").value;
-  document.getElementById("noticeContent").textContent = noticeText || "공지사항이 없습니다.";
-  localStorage.setItem(NOTICE_KEY, noticeText);
-  
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ notice: noticeText })
-  }).then(res => res.json()).then(() => {
-    closeOverlay("noticeOverlay");
-    toast("✅ 공지사항 업데이트 완료!");
-  });
-}
+      let parts = item.time.split("–");
+      let start = parts[0] ? parts[0].trim() : "";
+      let end = parts[1] ? parts[1].trim() : "";
 
-let viewMode = "card";
-function setView(mode, btn) {
-  viewMode = mode;
-  document.querySelectorAll(".view-btn").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("schedule").style.display = mode==="card" ? "" : "none";
-  document.getElementById("weekWrap").style.display  = mode==="week" ? "" : "none";
-  rerender();
-}
-
-function renderWeek() {
-  const tbl = document.getElementById("weekTable");
-  tbl.innerHTML = "";
-  const { order, dateMap } = getSortedDays();
-
-  order.forEach(day => {
-    const items = schedule[day] || [];
-    const col = document.createElement("div");
-    col.className = "week-col" + (editMode?" edit-active":"");
-    const dateInfo = dateMap[day];
-    const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
-    const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
-
-    col.innerHTML = `
-      <div class="week-day-title">
-        <div class="week-badge" style="${bgCol}">${dateBadgeStr}</div>
-        <span style="font-size:inherit;">${day}요일</span>
-        <span style="color:#888; font-weight:600; margin-left:4px; font-size:inherit;">(${dateInfo.text})</span>
-      </div>`;
-      
-    if(items){
-      items.forEach((item, idx) => {
-        const el = document.createElement("div");
-        el.className = item.type === "school" ? "week-school" : "week-block";
-        el.style.background = item.color;
-        if(item.type !== "school") el.style.color = textColor(item.color);
-        
-        if (item.type === "school") {
-          el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span style="margin-left:auto;font-size:0.75rem;opacity:0.85">${item.time}</span>`;
-        } else {
-          el.innerHTML = `
-            <div class="week-block-top">
-              <span class="week-block-icon">${item.icon}</span>
-              <span class="week-block-name">${item.label}</span>
-            </div>
-            <div class="week-block-time">${item.time}</div>`;
-        }
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        col.appendChild(el);
-      });
-    }
-    if (editMode) {
-      const addBtn = document.createElement("button");
-      addBtn.className = "add-btn";
-      addBtn.style.display = "flex";
-      addBtn.textContent = "+ 추가";
-      addBtn.onclick = () => openAdd(day);
-      col.appendChild(addBtn);
-    }
-    tbl.appendChild(col);
-  });
-  renderLegend();
-}
-
-function lum(hex) {
-  const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
-  return 0.299*r+0.587*g+0.114*b;
-}
-function textColor(hex) { return lum(hex)>0.45?"#222":"white"; }
-
-function rerender() { 
-  viewMode==="week" ? renderWeek() : render(); 
-  if (editMode) document.getElementById("noticeBoard").classList.add("edit-active");
-  else document.getElementById("noticeBoard").classList.remove("edit-active");
-}
-
-function render() {
-  const grid = document.getElementById("schedule");
-  grid.innerHTML = "";
-  const { order, dateMap } = getSortedDays();
-
-  order.forEach(day => {
-    const items = schedule[day] || [];
-    const card = document.createElement("div");
-    card.className = "day-card" + (editMode?" edit-active":"");
-    const dateInfo = dateMap[day];
-    const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
-    const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
-
-    card.innerHTML = `
-      <div class="day-title">
-        <div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>
-        <span style="font-size:inherit;">${day}요일</span>
-        <span style="color:#888; font-weight:600; margin-left:6px; font-size:inherit;">(${dateInfo.text})</span>
-      </div>`;
-
-    if(items){
-      items.forEach((item, idx) => {
-        const el = document.createElement("div");
-        el.className = item.type === "school" ? "school-row" : "block";
-        el.style.background = item.color;
-        if(item.type !== "school") el.style.color = textColor(item.color);
-        
-        if(item.type === "school"){
-          el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
-        } else {
-          el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
-        }
-        if (editMode) el.onclick = () => openEdit(day, idx);
-        card.appendChild(el);
-      });
-    }
-
-    const addBtn = document.createElement("button");
-    addBtn.className = "add-btn";
-    addBtn.textContent = "+ 일정 추가";
-    addBtn.onclick = () => openAdd(day);
-    card.appendChild(addBtn);
-    grid.appendChild(card);
-  });
-  renderLegend();
-}
-
-function renderLegend() {
-  const seen = new Map();
-  Object.values(schedule).flat().forEach(i => { if(!seen.has(i.label)) seen.set(i.label,i.color); });
-  const leg = document.getElementById("legend");
-  leg.innerHTML = "";
-  seen.forEach((c,l) => { leg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`; });
-}
-
-function toggleEdit() {
-  if (!editMode) {
-    document.getElementById("pwOverlay").classList.add("show");
-    document.getElementById("pwInput").value = "";
-    document.getElementById("pwError").textContent = "";
-    setTimeout(()=>document.getElementById("pwInput").focus(),100);
-  } else exitEdit();
-}
-function checkPw() {
-  if (document.getElementById("pwInput").value === EDIT_PASSWORD) {
-    closeOverlay("pwOverlay");
-    editMode = true;
-    document.getElementById("editBanner").classList.add("show");
-    document.getElementById("editFab").classList.add("active");
-    document.getElementById("editFab").textContent = "🔒";
-    rerender();
-  } else {
-    document.getElementById("pwError").textContent = "❌ 비밀번호가 틀렸습니다";
-  }
-}
-function exitEdit() {
-  editMode = false;
-  document.getElementById("editBanner").classList.remove("show");
-  document.getElementById("editFab").classList.remove("active");
-  document.getElementById("editFab").textContent = "✏️";
-  rerender();
-}
-
-function openNoticeEdit() {
-  document.getElementById("editNoticeText").value = noticeText;
-  document.getElementById("noticeOverlay").classList.add("show");
-}
-
-function buildColors(id, current, cb) {
-  const g = document.getElementById(id);
-  g.innerHTML = "";
-  PALETTE.forEach(c => {
-    const d = document.createElement("div");
-    d.className = "color-opt"+(c===current?" selected":"");
-    d.style.background = c;
-    d.onclick = () => { g.querySelectorAll(".color-opt").forEach(x=>x.classList.remove("selected")); d.classList.add("selected"); cb(c); };
-    g.appendChild(d);
-  });
-}
-
-function openEdit(day, idx) {
-  editTarget = {day, idx};
-  const item = schedule[day][idx];
-  selColor = item.color;
-  document.getElementById("editName").value  = item.label;
-  document.getElementById("editIcon").value  = item.icon;
-  const parts = item.time.split("–");
-  document.getElementById("editStart").value = parts[0]||"";
-  document.getElementById("editEnd").value   = parts[1]||"";
-  buildColors("colorGrid", selColor, c=>{ selColor=c; });
-  document.getElementById("editOverlay").classList.add("show");
-}
-
-async function saveBlock() {
-  if (!editTarget) return;
-  const item = schedule[editTarget.day][editTarget.idx];
-  const name  = document.getElementById("editName").value.trim();
-  if (!name) return;
-  const start = document.getElementById("editStart").value.trim();
-  const end   = document.getElementById("editEnd").value.trim();
-
-  const oldEventId = item.eventId; 
-
-  item.label = name;
-  item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
-  item.color = selColor;
-  item.time  = end ? `${start}–${end}` : start;
-
-  closeOverlay("editOverlay");
-  toast("⏳ 캘린더 일정 및 알람 자동 수정 중...");
-  rerender(); 
-
-  try {
-    const dayIndex = dayNames.indexOf(editTarget.day);
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'calendar_update', 
-        eventId: oldEventId,       
-        title: name,
-        dayIndex: dayIndex,
-        startTime: start,
-        endTime: end
-      })
-    });
-    const data = await res.json();
-    if(data.eventId) {
-      item.eventId = data.eventId; 
-    }
-  } catch(e) {
-     console.error("캘린더 알람 수정 에러:", e);
-  }
-  
-  save(); 
-}
-
-async function deleteBlock() {
-  if (!editTarget) return;
-  if(confirm("이 일정을 삭제하시겠습니까?\n(자동으로 구글 캘린더 알람도 함께 삭제됩니다.)")) {
-    const item = schedule[editTarget.day][editTarget.idx];
-    const eventIdToDelete = item.eventId;
-
-    schedule[editTarget.day].splice(editTarget.idx, 1);
-    closeOverlay("editOverlay"); 
-    toast("⏳ 캘린더 일정 삭제 중...");
-    rerender();
-    
-    if (eventIdToDelete) {
       try {
-        await fetch(SCRIPT_URL, {
+        let res = await fetch(SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
-            action: 'calendar_delete',
-            eventId: eventIdToDelete
+            action: 'calendar_add',
+            title: item.label,
+            dayIndex: dayIndex,
+            startTime: start,
+            endTime: end
           })
         });
+        let data = await res.json();
+        if(data.eventId) {
+          item.eventId = data.eventId;
+          addedCount++;
+        }
       } catch(e) {
-        console.error("캘린더 알람 삭제 에러:", e);
+        console.error("동기화 에러:", e);
       }
     }
-    
-    save(); 
-  }
-}
-
-function openAdd(day) {
-  addDay = day; addSelColor = PALETTE[4];
-  ["addName","addIcon","addStart","addEnd"].forEach(id=>document.getElementById(id).value="");
-  buildColors("addColorGrid", addSelColor, c=>{ addSelColor=c; });
-  document.getElementById("addOverlay").classList.add("show");
-}
-
-async function saveAdd() {
-  const name  = document.getElementById("addName").value.trim();
-  if (!name) return;
-  const icon  = document.getElementById("addIcon").value.trim()||"📌";
-  const start = document.getElementById("addStart").value.trim();
-  const end   = document.getElementById("addEnd").value.trim();
-  
-  const dayIndex = dayNames.indexOf(addDay);
-  const timeStr = end ? `${start}–${end}` : start;
-  
-  const newItem = { type:name, label:name, icon:icon, color:addSelColor, time:timeStr };
-
-  if(!schedule[addDay]) schedule[addDay] = [];
-  schedule[addDay].push(newItem);
-  schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
-  
-  closeOverlay("addOverlay"); 
-  toast("⏳ 캘린더 10분 전 알람 등록 중...");
-  rerender(); 
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'calendar_add',
-        title: name,
-        dayIndex: dayIndex,
-        startTime: start,
-        endTime: end
-      })
-    });
-    const data = await res.json();
-    if(data.eventId) {
-      newItem.eventId = data.eventId; 
-    }
-  } catch(e) {
-    console.error("캘린더 알람 등록 에러:", e);
   }
 
-  save(); 
-}
-
-function t2m(t) { const s=t.split("–")[0],[h,m]=s.split(":").map(Number); return (h||0)*60+(m||0); }
-function closeOverlay(id) { document.getElementById(id).classList.remove("show"); }
-function setSize(s, btn) {
-  document.body.classList.remove("size-lg","size-xl");
-  if(s!=="normal") document.body.classList.add("size-"+s);
-  document.querySelectorAll(".ctrl-btn").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-}
-function toast(msg="✅ 저장됐어요!") {
-  const t=document.getElementById("toast"); t.textContent=msg;
-  t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200);
-}
-
-updateHeaderDate();
-loadData();
-</script>
-</body>
-</html>
+  save(); // 발급받은 event
