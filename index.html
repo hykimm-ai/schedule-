@@ -116,7 +116,7 @@
   .week-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
   .week-table { display:grid; grid-template-columns:repeat(5,minmax(160px,1fr)); gap:12px; min-width:820px; max-width:1400px; margin:0 auto; }
   .week-col { background:var(--card); border-radius:16px; padding:14px 12px; box-shadow:var(--shadow); }
-  .week-day-title { font-family:'Gmarket Sans',sans-serif; font-size:1rem; font-weight:700; text-align:center; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .week-day-title { font-family:'Gmarket Sans',sans-serif; font-size:1rem; font-weight:700; text-align:center; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
   .week-badge { width:28px; height:28px; border-radius:8px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900; flex-shrink:0; }
   .week-school { display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:7px 10px; margin-bottom:7px; font-weight:700; color:white; font-size:0.82rem; }
   .week-block { display:flex; flex-direction:column; border-radius:10px; padding:8px 10px; margin-bottom:7px; font-weight:600; position:relative; overflow:hidden; }
@@ -152,7 +152,7 @@
 
 <header>
   <h1>🗓️ 지우 시간표</h1>
-  <p>학교 · 학원 주간 일정 (구글 연동됨)</p>
+  <p id="headerDate" style="font-weight:700; color:#e74c3c; margin-top:10px; font-size:1.05rem;"></p>
 </header>
 
 <div class="controls">
@@ -260,14 +260,15 @@
 
 <script>
 // ==========================================
-// 🔴 여기에 2단계에서 복사한 구글 웹 앱 URL을 붙여넣으세요! 🔴
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfO0yo7pJMwsxQNRG7UPhmwCnJcF_uuvyGc5aN5E7lRO8ciO3hlyzUFKJaCQJnW-9/exec";
+// 🔴 여기에 발급받으신 구글 웹 앱 URL을 붙여넣으세요! 🔴
+const SCRIPT_URL = "여기에_구글_앱스크립트_주소_붙여넣기";
 // ==========================================
 
 const EDIT_PASSWORD = "1234";
 const STORAGE_KEY = "kidSchedule_v3";
 const NOTICE_KEY = "kidNotice_v3";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
+const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
 const DEFAULT = {
   "월":[
@@ -312,6 +313,60 @@ let addDay = null;
 let selColor = PALETTE[0];
 let addSelColor = PALETTE[4];
 
+// ── 상단 오늘 날짜 업데이트 ──
+function updateHeaderDate() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const dayStr = dayNames[now.getDay()];
+  document.getElementById("headerDate").innerHTML = `📅 오늘: ${y}년 ${m}월 ${d}일 (${dayStr}요일)`;
+}
+
+// ── 요일 자동 정렬 로직 (오늘부터 시작) ──
+function getSortedDays() {
+  const now = new Date();
+  const actualDay = now.getDay();
+  
+  let todayIdx = actualDay;
+  let daysToOffset = 0;
+  
+  // 주말(토,일)에 앱을 열면 다음 주 월요일부터 보이게 세팅
+  if (actualDay === 0) { 
+    todayIdx = 1; daysToOffset = 1; 
+  } else if (actualDay === 6) { 
+    todayIdx = 1; daysToOffset = 2; 
+  }
+  
+  const order = [];
+  const dateMap = {};
+  const targetDays = [1, 2, 3, 4, 5]; // 월(1) ~ 금(5)
+  
+  // 오늘을 기준으로 요일 순서 섞기
+  targetDays.sort((a, b) => {
+    let distA = a >= todayIdx ? a - todayIdx : a - todayIdx + 7;
+    let distB = b >= todayIdx ? b - todayIdx : b - todayIdx + 7;
+    return distA - distB;
+  });
+  
+  targetDays.forEach(d => {
+    let dist = d >= todayIdx ? d - todayIdx : d - todayIdx + 7;
+    let targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + daysToOffset + dist);
+    
+    let dayStr = dayNames[d];
+    order.push(dayStr);
+    
+    let isToday = (dist === 0 && actualDay !== 0 && actualDay !== 6);
+    dateMap[dayStr] = { 
+      text: `${targetDate.getMonth()+1}/${targetDate.getDate()}`,
+      isToday: isToday
+    };
+  });
+  
+  return { order, dateMap };
+}
+
 // ── 데이터베이스 로드 ─────────────────────────
 async function loadData() {
   try {
@@ -331,7 +386,6 @@ async function loadData() {
     rerender();
   } catch(e) {
     console.error("구글 시트 연동 실패:", e);
-    // 구글 시트 오류 시 임시로 브라우저 데이터라도 보여주기
     const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r);
     const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n;
     document.getElementById("noticeContent").textContent = noticeText;
@@ -341,7 +395,7 @@ async function loadData() {
 
 // ── 데이터베이스 저장 ─────────────────────────
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); // 백업용 로컬 저장
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); 
   fetch(SCRIPT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -378,10 +432,25 @@ function setView(mode, btn) {
 function renderWeek() {
   const tbl = document.getElementById("weekTable");
   tbl.innerHTML = "";
-  Object.entries(schedule).forEach(([day, items]) => {
+  
+  const { order, dateMap } = getSortedDays();
+
+  order.forEach(day => {
+    const items = schedule[day] || [];
     const col = document.createElement("div");
     col.className = "week-col" + (editMode?" edit-active":"");
-    col.innerHTML = `<div class="week-day-title"><div class="week-badge">${day}</div>${day}요일</div>`;
+    
+    const dateInfo = dateMap[day];
+    const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
+    const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
+
+    col.innerHTML = `
+      <div class="week-day-title">
+        <div class="week-badge" style="${bgCol}">${dateBadgeStr}</div>
+        <span>${day}요일</span>
+        <span style="font-size:0.8rem; color:#888; font-weight:600; margin-left:4px;">(${dateInfo.text})</span>
+      </div>`;
+      
     if(items){
       items.forEach((item, idx) => {
         if (item.type === "school") {
@@ -436,10 +505,19 @@ function rerender() {
 function render() {
   const grid = document.getElementById("schedule");
   grid.innerHTML = "";
-  Object.entries(schedule).forEach(([day, items]) => {
+  
+  const { order, dateMap } = getSortedDays();
+
+  order.forEach(day => {
+    const items = schedule[day] || [];
     const card = document.createElement("div");
     card.className = "day-card" + (editMode?" edit-active":"");
-    card.innerHTML = `<div class="day-title"><div class="day-badge">${day}</div>${day}요일</div>`;
+    
+    const dateInfo = dateMap[day];
+    const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
+    const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
+
+    card.innerHTML = `<div class="day-title"><div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>${day}요일 <span style="font-size:0.95rem; color:#888; font-weight:600; margin-left:6px;">(${dateInfo.text})</span></div>`;
 
     if(items){
       items.forEach((item, idx) => {
@@ -595,7 +673,8 @@ function toast(msg="✅ 저장됐어요!") {
 }
 
 // ── Init ──────────────────────────────────────
-loadData(); // 시작할 때 구글 스프레드시트에서 데이터를 불러옵니다.
+updateHeaderDate();
+loadData();
 </script>
 </body>
 </html>
