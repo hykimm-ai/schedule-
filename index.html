@@ -257,13 +257,47 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfO0yo7pJMwsxQNRG7
 // ==========================================
 
 const EDIT_PASSWORD = "1234";
-const STORAGE_KEY = "kidSchedule_v4";
-const NOTICE_KEY = "kidNotice_v4";
+// ❗ 데이터가 사라진 원인이었던 키를 v3로 완벽하게 되돌렸습니다.
+const STORAGE_KEY = "kidSchedule_v3";
+const NOTICE_KEY = "kidNotice_v3";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
 const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
-// 기본값은 빈 상태로 시작합니다 (원하는 초기값 자유롭게 세팅 가능)
-const DEFAULT = { "월":[], "화":[], "수":[], "목":[], "금":[] };
+// ❗ 이전처럼 초기 데이터 뼈대를 다시 살려두었습니다.
+const DEFAULT = {
+  "월":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"english",  time:"1:40–2:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"math",     time:"2:50–4:30", label:"수학",      icon:"📐", color:"#45B7D1"},
+    {type:"home",     time:"4:30–5:15", label:"집",      icon:"🏠", color:"#b2bec3"},
+    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "화":[
+    {type:"school",   time:"2:20",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"soccer",   time:"2:30–3:55", label:"축구",      icon:"⚽", color:"#26de81"},
+    {type:"english",  time:"4:00–5:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "수":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"violin",   time:"1:40–2:30", label:"바이올린",  icon:"🎻", color:"#a29bfe"},
+    {type:"english",  time:"2:40–3:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"taekwondo",time:"4:30–5:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "목":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"english",  time:"1:40–3:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"hanuri",   time:"3:10–4:30", label:"한우리논술", icon:"📝", color:"#fd79a8"},
+    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
+  ],
+  "금":[
+    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
+    {type:"english",  time:"1:40–2:45", label:"영어",      icon:"📚", color:"#4ECDC4"},
+    {type:"art",      time:"3:00–4:20", label:"미술",      icon:"🎨", color:"#e17055"},
+    {type:"home",     time:"4:30–5:40", label:"집",        icon:"🏠", color:"#b2bec3"},
+    {type:"swim",     time:"5:45–7:00", label:"수영",      icon:"🏊", color:"#00cec9"},
+  ],
+};
 
 let schedule = JSON.parse(JSON.stringify(DEFAULT));
 let noticeText = "공지사항을 불러오는 중입니다...";
@@ -279,7 +313,7 @@ function updateHeaderDate() {
   const m = now.getMonth() + 1;
   const d = now.getDate();
   const dayStr = dayNames[now.getDay()];
-  document.getElementById("headerDate").innerHTML = `📅 오늘: ${y}년 ${m}월 ${d}일 (${dayStr}요일)`;
+  document.getElementById("headerDate").innerHTML = `📅 오늘: ${m}월 ${d}일 (${dayStr}요일)`;
 }
 
 function getSortedDays() {
@@ -551,7 +585,6 @@ function openEdit(day, idx) {
   document.getElementById("editOverlay").classList.add("show");
 }
 
-// 📌 [수정됨] 기존 블록 업데이트 & 구글 캘린더 동기화 로직
 async function saveBlock() {
   if (!editTarget) return;
   const item = schedule[editTarget.day][editTarget.idx];
@@ -560,7 +593,7 @@ async function saveBlock() {
   const start = document.getElementById("editStart").value.trim();
   const end   = document.getElementById("editEnd").value.trim();
 
-  const oldEventId = item.eventId; // 기존 캘린더 ID 백업
+  const oldEventId = item.eventId; 
 
   item.label = name;
   item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
@@ -569,7 +602,7 @@ async function saveBlock() {
 
   closeOverlay("editOverlay");
   toast("⏳ 캘린더 일정 수정 중...");
-  rerender(); // UI 먼저 업데이트
+  rerender(); 
 
   try {
     const dayIndex = dayNames.indexOf(editTarget.day);
@@ -577,8 +610,8 @@ async function saveBlock() {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
-        action: 'calendar_update', // 수정 요청
-        eventId: oldEventId,       // 지울 기존 ID 전송
+        action: 'calendar_update', 
+        eventId: oldEventId,       
         title: name,
         dayIndex: dayIndex,
         startTime: start,
@@ -587,16 +620,15 @@ async function saveBlock() {
     });
     const data = await res.json();
     if(data.eventId) {
-      item.eventId = data.eventId; // 새로 발급된 ID 저장
+      item.eventId = data.eventId; 
     }
   } catch(e) {
      console.error("캘린더 알람 수정 에러:", e);
   }
   
-  save(); // 최종적으로 변경된 ID가 포함된 스케줄 시트에 저장
+  save(); 
 }
 
-// 📌 [수정됨] 삭제 시 구글 캘린더 동기화 로직 추가
 async function deleteBlock() {
   if (!editTarget) return;
   if(confirm("이 일정을 삭제하시겠습니까?\n(자동으로 구글 캘린더 알람도 함께 삭제됩니다.)")) {
@@ -608,7 +640,6 @@ async function deleteBlock() {
     toast("⏳ 캘린더 일정 삭제 중...");
     rerender();
     
-    // 캘린더에 저장된 ID가 있다면 삭제 요청 전송
     if (eventIdToDelete) {
       try {
         await fetch(SCRIPT_URL, {
@@ -624,7 +655,7 @@ async function deleteBlock() {
       }
     }
     
-    save(); // 삭제 반영본 시트에 저장
+    save(); 
   }
 }
 
@@ -635,7 +666,6 @@ function openAdd(day) {
   document.getElementById("addOverlay").classList.add("show");
 }
 
-// 📌 [수정됨] 일정 추가 시 발급된 ID를 기억하도록 변경
 async function saveAdd() {
   const name  = document.getElementById("addName").value.trim();
   if (!name) return;
@@ -646,7 +676,6 @@ async function saveAdd() {
   const dayIndex = dayNames.indexOf(addDay);
   const timeStr = end ? `${start}–${end}` : start;
   
-  // 새 항목 객체 생성
   const newItem = { type:name, label:name, icon:icon, color:addSelColor, time:timeStr };
 
   if(!schedule[addDay]) schedule[addDay] = [];
@@ -655,9 +684,8 @@ async function saveAdd() {
   
   closeOverlay("addOverlay"); 
   toast("⏳ 캘린더에 연동 중입니다...");
-  rerender(); // UI 선 반영
+  rerender(); 
 
-  // 백엔드로 추가 요청 및 ID 받아오기
   try {
     const res = await fetch(SCRIPT_URL, {
       method: 'POST',
@@ -672,13 +700,12 @@ async function saveAdd() {
     });
     const data = await res.json();
     if(data.eventId) {
-      newItem.eventId = data.eventId; // 구글 캘린더 고유 ID 추가
+      newItem.eventId = data.eventId; 
     }
   } catch(e) {
     console.error("캘린더 알람 등록 에러:", e);
   }
 
-  // ID 포함해서 구글 시트에 최종 저장
   save(); 
 }
 
