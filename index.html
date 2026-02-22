@@ -33,7 +33,11 @@
   .days-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; max-width:1200px; margin:0 auto; }
   .day-card { background:var(--card); border-radius:20px; padding:20px; box-shadow:var(--shadow); transition:transform 0.2s; }
   .day-card:hover { transform:translateY(-2px); }
+  
+  /* 📌 요일과 날짜 사이즈 동기화를 위한 CSS 수정 */
   .day-title { font-family:'Gmarket Sans',sans-serif; font-size:1.3rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .day-title span { font-size: 1em; } /* 부모(day-title)의 크기를 100% 동일하게 따라감 */
+  .day-title .day-date { color:#888; font-weight:600; }
   .day-badge { width:36px; height:36px; border-radius:10px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:900; flex-shrink:0; }
 
   .school-row { display:flex; align-items:center; gap:10px; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-weight:700; color:white; position:relative; }
@@ -52,10 +56,12 @@
   .add-btn { display:none !important; align-items:center; justify-content:center; gap:6px; border:2px dashed rgba(0,0,0,0.2); border-radius:12px; padding:9px 14px; margin-bottom:8px; background:transparent; width:100%; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; color:rgba(0,0,0,0.4); cursor:pointer; transition:all 0.2s; }
   .add-btn:hover { border-color:rgba(0,0,0,0.5); color:rgba(0,0,0,0.65); }
 
+  /* 📌 모드별 폰트 사이즈 조정 (날짜도 똑같이 커짐) */
   body.size-lg .block-name { font-size:1.25rem; }
   body.size-lg .block-time { font-size:1rem; }
   body.size-lg .school-row { font-size:1.1rem; }
   body.size-lg .day-title  { font-size:1.5rem; }
+  body.size-lg .week-day-title { font-size:1.2rem; }
   body.size-lg .block { padding:13px 16px; }
   body.size-lg .notice-content { font-size:1.1rem; }
   
@@ -63,6 +69,7 @@
   body.size-xl .block-time { font-size:1.15rem; }
   body.size-xl .school-row { font-size:1.25rem; padding:13px 16px; }
   body.size-xl .day-title  { font-size:1.7rem; }
+  body.size-xl .week-day-title { font-size:1.4rem; }
   body.size-xl .block { padding:16px 18px; margin-bottom:10px; }
   body.size-xl .days-grid  { grid-template-columns:1fr; max-width:600px; }
   body.size-xl .notice-content { font-size:1.25rem; }
@@ -110,7 +117,12 @@
   .week-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
   .week-table { display:grid; grid-template-columns:repeat(5,minmax(160px,1fr)); gap:12px; min-width:820px; max-width:1400px; margin:0 auto; }
   .week-col { background:var(--card); border-radius:16px; padding:14px 12px; box-shadow:var(--shadow); }
+  
+  /* 📌 한눈에 보기 모드 요일/날짜 사이즈 동기화 */
   .week-day-title { font-family:'Gmarket Sans',sans-serif; font-size:1rem; font-weight:700; text-align:center; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .week-day-title span { font-size: 1em; }
+  .week-day-title .day-date { color:#888; font-weight:600; }
+  
   .week-badge { width:28px; height:28px; border-radius:8px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900; flex-shrink:0; }
   .week-school { display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:7px 10px; margin-bottom:7px; font-weight:700; color:white; font-size:0.82rem; }
   .week-block { display:flex; flex-direction:column; border-radius:10px; padding:8px 10px; margin-bottom:7px; font-weight:600; position:relative; overflow:hidden; }
@@ -151,7 +163,6 @@
   <button class="ctrl-btn active" onclick="setSize('normal',this)">보통</button>
   <button class="ctrl-btn" onclick="setSize('lg',this)">크게 🔍</button>
   <button class="ctrl-btn" onclick="setSize('xl',this)">매우 크게 👴👵</button>
-  <button class="ctrl-btn" onclick="syncAllToCalendar()" style="background:#e74c3c; color:white; border:none; margin-left:10px;">🔔 최초 캘린더 전체 등록</button>
 </div>
 
 <div class="notice-board" id="noticeBoard">
@@ -253,12 +264,12 @@
 
 <script>
 // ==========================================
-// 🔴 새로 배포된 구글 앱스 스크립트 웹 앱 URL을 붙여넣으세요! 🔴
+// 🔴 발급받으신 구글 웹 앱 URL을 붙여넣으세요! 🔴
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweGBOTSkmx8f1MWxI5vKT-4MzY2tvRsnfq3eiYosbwXKaecutNOfXzIEeU_vL48w1M/exec";
 // ==========================================
 
 const EDIT_PASSWORD = "1234";
-const STORAGE_KEY = "kidSchedule_v5"; 
+const STORAGE_KEY = "kidSchedule_v5";
 const NOTICE_KEY = "kidNotice_v5";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
 const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -306,95 +317,55 @@ let addDay = null;
 let selColor = PALETTE[0];
 let addSelColor = PALETTE[4];
 
-// 📌 캘린더 최초 전체 동기화 함수
-async function syncAllToCalendar() {
-  if(!confirm("현재 화면에 보이는 모든 시간표 일정을 구글 캘린더에 '최초 등록' 하시겠습니까?\n\n💡 (이미 등록된 일정은 제외하고 등록됩니다. 10~20초 정도 시간이 소요될 수 있습니다.)")) return;
-
-  toast("⏳ 캘린더에 전체 등록 중입니다... (약 10~20초 소요)");
-
-  let addedCount = 0;
-  
-  // 월요일부터 금요일까지 모든 일정 순회
-  for (let i = 0; i < dayNames.length; i++) {
-    let day = dayNames[i];
-    if (!schedule[day]) continue;
-    let dayIndex = i;
-
-    for (let j = 0; j < schedule[day].length; j++) {
-      let item = schedule[day][j];
-
-      // 이미 캘린더 ID가 있으면(=등록된 일정이면) 건너뛰기
-      if (item.eventId) continue;
-
-      let parts = item.time.split("–");
-      let start = parts[0] ? parts[0].trim() : "";
-      let end = parts[1] ? parts[1].trim() : "";
-
-      try {
-        let res = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'calendar_add',
-            title: item.label,
-            dayIndex: dayIndex,
-            startTime: start,
-            endTime: end
-          })
-        });
-        let data = await res.json();
-        if(data.eventId) {
-          item.eventId = data.eventId;
-          addedCount++;
-        }
-      } catch(e) {
-        console.error("동기화 에러:", e);
-      }
-    }
-  }
-
-  save(); // 발급받은 eventId들을 시트에 최종 저장
-  toast(`✅ 총 ${addedCount}개의 일정이 캘린더에 등록 완료되었습니다!`);
-  rerender();
-}
-
 function updateHeaderDate() {
   const now = new Date();
   const m = now.getMonth() + 1;
   const d = now.getDate();
   const dayStr = dayNames[now.getDay()];
+  // 📌 연도 제외, "월 일 (요일)" 만 표기
   document.getElementById("headerDate").innerHTML = `📅 오늘: ${m}월 ${d}일 (${dayStr}요일)`;
 }
 
+// 📌 3/3일 기준 정렬 및 날짜 계산 완벽 적용
 function getSortedDays() {
   const now = new Date();
   const actualDay = now.getDay();
   
   let todayIdx = actualDay;
-  let daysToOffset = 0;
-  
-  if (actualDay === 0) { todayIdx = 1; daysToOffset = 1; }
-  else if (actualDay === 6) { todayIdx = 1; daysToOffset = 2; }
+  if (actualDay === 0) { todayIdx = 1; }
+  else if (actualDay === 6) { todayIdx = 1; }
   
   const order = [];
   const dateMap = {};
   const targetDays = [1, 2, 3, 4, 5];
   
+  // 1. 요일 순서를 '오늘 요일' 기준으로 재정렬 (해당 요일이 맨 첫번째로 옴)
   targetDays.sort((a, b) => {
     let distA = a >= todayIdx ? a - todayIdx : a - todayIdx + 7;
     let distB = b >= todayIdx ? b - todayIdx : b - todayIdx + 7;
     return distA - distB;
   });
   
+  // 2. 카드에 표기될 날짜의 최소 기준일을 3월 2일(월) ~ 3월 6일(금) 주간으로 고정
+  let baseDateForCalc = new Date(now);
+  if (baseDateForCalc < new Date('2026-03-02T00:00:00')) {
+     baseDateForCalc = new Date('2026-03-02T00:00:00');
+  }
+  
+  let baseDayOfWeek = baseDateForCalc.getDay();
+  let diffToMon = baseDayOfWeek === 0 ? -6 : 1 - baseDayOfWeek;
+  let mondayOfCalcWeek = new Date(baseDateForCalc);
+  mondayOfCalcWeek.setDate(baseDateForCalc.getDate() + diffToMon);
+  
   targetDays.forEach(d => {
-    let dist = d >= todayIdx ? d - todayIdx : d - todayIdx + 7;
-    let targetDate = new Date(now);
-    targetDate.setDate(now.getDate() + daysToOffset + dist);
+    let targetDate = new Date(mondayOfCalcWeek);
+    targetDate.setDate(mondayOfCalcWeek.getDate() + (d - 1)); 
     
     let dayStr = dayNames[d];
     order.push(dayStr);
     
-    let isToday = (dist === 0 && actualDay !== 0 && actualDay !== 6);
+    // 3. 오늘 표시 하이라이트는 '진짜 오늘 요일'일 때만 켜짐
+    let isToday = (d === actualDay && actualDay !== 0 && actualDay !== 6);
     dateMap[dayStr] = { 
       text: `${targetDate.getMonth()+1}/${targetDate.getDate()}`,
       isToday: isToday
@@ -433,7 +404,7 @@ function save() {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ schedule: schedule })
-  }).then(res => res.json()).then(() => toast("✅ 저장됐어요! (구글 동기화)"));
+  }).then(res => res.json()).then(() => toast("✅ 저장됐어요!"));
 }
 
 function saveNotice() {
@@ -477,8 +448,8 @@ function renderWeek() {
     col.innerHTML = `
       <div class="week-day-title">
         <div class="week-badge" style="${bgCol}">${dateBadgeStr}</div>
-        <span style="font-size:inherit;">${day}요일</span>
-        <span style="color:#888; font-weight:600; margin-left:4px; font-size:inherit;">(${dateInfo.text})</span>
+        <span>${day}요일</span>
+        <span class="day-date">(${dateInfo.text})</span>
       </div>`;
       
     if(items){
@@ -543,8 +514,8 @@ function render() {
     card.innerHTML = `
       <div class="day-title">
         <div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>
-        <span style="font-size:inherit;">${day}요일</span>
-        <span style="color:#888; font-weight:600; margin-left:6px; font-size:inherit;">(${dateInfo.text})</span>
+        <span>${day}요일</span>
+        <span class="day-date">(${dateInfo.text})</span>
       </div>`;
 
     if(items){
@@ -640,7 +611,7 @@ function openEdit(day, idx) {
   document.getElementById("editOverlay").classList.add("show");
 }
 
-async function saveBlock() {
+function saveBlock() {
   if (!editTarget) return;
   const item = schedule[editTarget.day][editTarget.idx];
   const name  = document.getElementById("editName").value.trim();
@@ -648,69 +619,23 @@ async function saveBlock() {
   const start = document.getElementById("editStart").value.trim();
   const end   = document.getElementById("editEnd").value.trim();
 
-  const oldEventId = item.eventId; 
-
   item.label = name;
   item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
   item.color = selColor;
   item.time  = end ? `${start}–${end}` : start;
 
   closeOverlay("editOverlay");
-  toast("⏳ 캘린더 일정 및 알람 자동 수정 중...");
-  rerender(); 
-
-  try {
-    const dayIndex = dayNames.indexOf(editTarget.day);
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'calendar_update', 
-        eventId: oldEventId,       
-        title: name,
-        dayIndex: dayIndex,
-        startTime: start,
-        endTime: end
-      })
-    });
-    const data = await res.json();
-    if(data.eventId) {
-      item.eventId = data.eventId; 
-    }
-  } catch(e) {
-     console.error("캘린더 알람 수정 에러:", e);
-  }
-  
   save(); 
+  rerender(); 
 }
 
-async function deleteBlock() {
+function deleteBlock() {
   if (!editTarget) return;
-  if(confirm("이 일정을 삭제하시겠습니까?\n(자동으로 구글 캘린더 알람도 함께 삭제됩니다.)")) {
-    const item = schedule[editTarget.day][editTarget.idx];
-    const eventIdToDelete = item.eventId;
-
+  if(confirm("이 일정을 삭제하시겠습니까?")) {
     schedule[editTarget.day].splice(editTarget.idx, 1);
     closeOverlay("editOverlay"); 
-    toast("⏳ 캘린더 일정 삭제 중...");
-    rerender();
-    
-    if (eventIdToDelete) {
-      try {
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'calendar_delete',
-            eventId: eventIdToDelete
-          })
-        });
-      } catch(e) {
-        console.error("캘린더 알람 삭제 에러:", e);
-      }
-    }
-    
     save(); 
+    rerender();
   }
 }
 
@@ -721,14 +646,13 @@ function openAdd(day) {
   document.getElementById("addOverlay").classList.add("show");
 }
 
-async function saveAdd() {
+function saveAdd() {
   const name  = document.getElementById("addName").value.trim();
   if (!name) return;
   const icon  = document.getElementById("addIcon").value.trim()||"📌";
   const start = document.getElementById("addStart").value.trim();
   const end   = document.getElementById("addEnd").value.trim();
   
-  const dayIndex = dayNames.indexOf(addDay);
   const timeStr = end ? `${start}–${end}` : start;
   
   const newItem = { type:name, label:name, icon:icon, color:addSelColor, time:timeStr };
@@ -738,30 +662,8 @@ async function saveAdd() {
   schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
   
   closeOverlay("addOverlay"); 
-  toast("⏳ 캘린더 10분 전 알람 등록 중...");
-  rerender(); 
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'calendar_add',
-        title: name,
-        dayIndex: dayIndex,
-        startTime: start,
-        endTime: end
-      })
-    });
-    const data = await res.json();
-    if(data.eventId) {
-      newItem.eventId = data.eventId; 
-    }
-  } catch(e) {
-    console.error("캘린더 알람 등록 에러:", e);
-  }
-
   save(); 
+  rerender(); 
 }
 
 function t2m(t) { const s=t.split("–")[0],[h,m]=s.split(":").map(Number); return (h||0)*60+(m||0); }
