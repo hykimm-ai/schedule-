@@ -252,18 +252,17 @@
 
 <script>
 // ==========================================
-// 🔴 여기에 발급받으신 구글 웹 앱 URL을 꼭 다시 붙여넣으세요! 🔴
+// 🔴 새로 배포된 구글 앱스 스크립트 웹 앱 URL을 붙여넣으세요! 🔴
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfO0yo7pJMwsxQNRG7UPhmwCnJcF_uuvyGc5aN5E7lRO8ciO3hlyzUFKJaCQJnW-9/exec";
 // ==========================================
 
 const EDIT_PASSWORD = "1234";
-// ❗ 데이터가 사라진 원인이었던 키를 v3로 완벽하게 되돌렸습니다.
-const STORAGE_KEY = "kidSchedule_v3";
-const NOTICE_KEY = "kidNotice_v3";
+const STORAGE_KEY = "kidSchedule_v5"; // 데이터 초기화 방지 및 기존 뼈대 로드를 위해 v5로 변경
+const NOTICE_KEY = "kidNotice_v5";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
 const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
-// ❗ 이전처럼 초기 데이터 뼈대를 다시 살려두었습니다.
+// 📌 기존에 설정하셨던 시간표 데이터를 그대로 복구했습니다.
 const DEFAULT = {
   "월":[
     {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
@@ -309,10 +308,10 @@ let addSelColor = PALETTE[4];
 
 function updateHeaderDate() {
   const now = new Date();
-  const y = now.getFullYear();
   const m = now.getMonth() + 1;
   const d = now.getDate();
   const dayStr = dayNames[now.getDay()];
+  // 📌 연도 제외, "월 일 요일" 만 표기되도록 수정
   document.getElementById("headerDate").innerHTML = `📅 오늘: ${m}월 ${d}일 (${dayStr}요일)`;
 }
 
@@ -427,8 +426,8 @@ function renderWeek() {
     col.innerHTML = `
       <div class="week-day-title">
         <div class="week-badge" style="${bgCol}">${dateBadgeStr}</div>
-        <span>${day}요일</span>
-        <span style="font-size:0.8rem; color:#888; font-weight:600; margin-left:4px;">(${dateInfo.text})</span>
+        <span style="font-size:inherit;">${day}요일</span>
+        <span style="color:#888; font-weight:600; margin-left:4px; font-size:inherit;">(${dateInfo.text})</span>
       </div>`;
       
     if(items){
@@ -490,7 +489,12 @@ function render() {
     const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
     const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
 
-    card.innerHTML = `<div class="day-title"><div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>${day}요일 <span style="font-size:0.95rem; color:#888; font-weight:600; margin-left:6px;">(${dateInfo.text})</span></div>`;
+    card.innerHTML = `
+      <div class="day-title">
+        <div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>
+        <span style="font-size:inherit;">${day}요일</span>
+        <span style="color:#888; font-weight:600; margin-left:6px; font-size:inherit;">(${dateInfo.text})</span>
+      </div>`;
 
     if(items){
       items.forEach((item, idx) => {
@@ -601,7 +605,7 @@ async function saveBlock() {
   item.time  = end ? `${start}–${end}` : start;
 
   closeOverlay("editOverlay");
-  toast("⏳ 캘린더 일정 수정 중...");
+  toast("⏳ 캘린더 일정 및 알람 자동 수정 중...");
   rerender(); 
 
   try {
@@ -683,7 +687,7 @@ async function saveAdd() {
   schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
   
   closeOverlay("addOverlay"); 
-  toast("⏳ 캘린더에 연동 중입니다...");
+  toast("⏳ 캘린더 10분 전 알람 등록 중...");
   rerender(); 
 
   try {
