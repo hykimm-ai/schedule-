@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -19,12 +18,13 @@
   .ctrl-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 20px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
   .ctrl-btn:hover,.ctrl-btn.active { background:var(--text); color:white; border-color:var(--text); }
 
-  /* ── 공지사항 ── */
+  /* ── 공지사항 (Notice Board) ── */
   .notice-board { background:#fffbea; border:2px dashed #f1c40f; padding:16px 20px; border-radius:16px; margin:0 auto 24px auto; max-width:1200px; box-shadow:var(--shadow); transition:all 0.2s; }
   .notice-header { font-family:'Gmarket Sans',sans-serif; font-size:1.1rem; color:#d35400; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
-  .notice-content { font-size:0.95rem; line-height:1.5; font-weight:600; color:#444; white-space:pre-wrap; }
-  .edit-notice-btn { display:none; background:var(--text); color:white; border:none; border-radius:8px; padding:6px 12px; font-size:0.8rem; font-weight:700; cursor:pointer; }
-  .edit-active.notice-board .edit-notice-btn { display:inline-block; }
+  .notice-content { font-size:0.95rem; line-height:1.6; font-weight:600; color:#444; white-space:pre-wrap; }
+  .edit-notice-btn { display:none; background:var(--text); color:white; border:none; border-radius:8px; padding:6px 12px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:background 0.2s; }
+  .edit-notice-btn:hover { background:#333; }
+  .notice-board.edit-active .edit-notice-btn { display:inline-block; }
 
   .legend { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:24px; }
   .legend-item { display:flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:600; background:white; padding:5px 12px; border-radius:50px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
@@ -119,7 +119,7 @@
   .week-badge { width:28px; height:28px; border-radius:8px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900; flex-shrink:0; }
   .week-school { display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:7px 10px; margin-bottom:7px; font-weight:700; color:white; font-size:0.82rem; }
   .week-block { display:flex; flex-direction:column; border-radius:10px; padding:8px 10px; margin-bottom:7px; font-weight:600; position:relative; overflow:hidden; }
-  .week-block::before { content:'absolute'; inset:0; background:rgba(255,255,255,0.12); border-radius:inherit; }
+  .week-block::before { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.12); border-radius:inherit; }
   .week-block-top { display:flex; align-items:center; gap:5px; position:relative; }
   .week-block-name { font-size:0.88rem; font-weight:700; flex:1; }
   .week-block-icon { font-size:0.95rem; }
@@ -165,7 +165,7 @@
     <span>📌 공지사항</span>
     <button class="edit-notice-btn" onclick="openNoticeEdit()">✏️ 수정</button>
   </div>
-  <div class="notice-content" id="noticeContent">전달할 메모나 공지사항을 입력해 주세요.</div>
+  <div class="notice-content" id="noticeContent">로딩 중...</div>
 </div>
 
 <div class="days-grid" id="schedule"></div>
@@ -203,7 +203,7 @@
 <div class="overlay" id="noticeOverlay">
   <div class="modal">
     <h2>📌 공지사항 수정</h2>
-    <p>전달할 내용을 자유롭게 적어주세요</p>
+    <p>메모할 내용을 자유롭게 적어주세요</p>
     <textarea id="editNoticeText" rows="4" placeholder="예: 이번 주 금요일은 단축수업입니다!"></textarea>
     <div class="btn-row">
       <button class="btn-primary" onclick="saveNotice()">저장</button>
@@ -299,7 +299,7 @@ const DEFAULT = {
 };
 
 let schedule = JSON.parse(JSON.stringify(DEFAULT));
-let noticeText = "전달할 메모나 공지사항을 입력해 주세요.";
+let noticeText = "여기에 꼭 전하고 싶은 특별한 메모나 공지사항을 적어주세요! 😊";
 let editMode = false;
 let editTarget = null;
 let addDay = null;
@@ -366,7 +366,7 @@ function save() {
 }
 function load() {
   try { const r = localStorage.getItem(STORAGE_KEY); if(r) schedule = JSON.parse(r); } catch(e){}
-  try { const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n; document.getElementById("noticeContent").textContent = noticeText; } catch(e){}
+  try { const n = localStorage.getItem(NOTICE_KEY); if(n) noticeText = n; } catch(e){}
 }
 
 // ── Notice Edit ───────────────────────────────
@@ -391,6 +391,8 @@ function textColor(hex) { return lum(hex)>0.45?"#222":"white"; }
 
 function rerender() { 
   viewMode==="week" ? renderWeek() : render(); 
+  
+  // 편집 모드에 따라 공지사항 영역 스타일 변경
   if (editMode) document.getElementById("noticeBoard").classList.add("edit-active");
   else document.getElementById("noticeBoard").classList.remove("edit-active");
 }
@@ -547,7 +549,9 @@ function toast(msg="✅ 저장됐어요!") {
 }
 
 // ── Init ──────────────────────────────────────
-load(); rerender();
+load(); 
+document.getElementById("noticeContent").textContent = noticeText;
+rerender();
 </script>
 </body>
 </html>
