@@ -13,19 +13,12 @@
 
   header { text-align:center; margin-bottom:24px; }
   header h1 { font-family:'Gmarket Sans',sans-serif; font-size:2rem; font-weight:700; }
-  
-  /* ── 상단 오늘 날짜 크기 연동 ── */
-  #headerDate { font-weight:700; color:#e74c3c; margin-top:10px; font-size:1.05rem; transition: font-size 0.2s; }
-  body.size-lg #headerDate { font-size: 1.25rem; }
-  body.size-xl #headerDate { font-size: 1.45rem; }
+  header p  { font-size:0.85rem; color:#888; margin-top:4px; }
 
-  .controls { display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-  .ctrl-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 18px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
+  .controls { display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .ctrl-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 20px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
   .ctrl-btn:hover,.ctrl-btn.active { background:var(--text); color:white; border-color:var(--text); }
-  .alarm-btn { background:#e74c3c; color:white; border-color:#e74c3c; box-shadow:0 4px 10px rgba(231,76,60,0.3); }
-  .alarm-btn:hover { background:#c0392b; transform:translateY(-2px); }
 
-  /* ── 공지사항 ── */
   .notice-board { background:#fffbea; border:2px dashed #f1c40f; padding:16px 20px; border-radius:16px; margin:0 auto 24px auto; max-width:1200px; box-shadow:var(--shadow); transition:all 0.2s; }
   .notice-header { font-family:'Gmarket Sans',sans-serif; font-size:1.1rem; color:#d35400; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
   .notice-content { font-size:0.95rem; line-height:1.6; font-weight:600; color:#444; white-space:pre-wrap; }
@@ -43,10 +36,6 @@
   .day-title { font-family:'Gmarket Sans',sans-serif; font-size:1.3rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
   .day-badge { width:36px; height:36px; border-radius:10px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:900; flex-shrink:0; }
 
-  /* ── 날짜 텍스트 (요일과 폰트 크기 동일하게 맞춤) ── */
-  .day-date-text { font-size:inherit; color:#888; font-weight:600; margin-left:6px; }
-  .week-date-text { font-size:inherit; color:#888; font-weight:600; margin-left:4px; }
-
   .school-row { display:flex; align-items:center; gap:10px; border-radius:12px; padding:10px 14px; margin-bottom:8px; font-weight:700; color:white; position:relative; }
   .school-row .school-time { font-size:0.9rem; opacity:0.85; margin-left:auto; font-weight:600; }
 
@@ -56,7 +45,6 @@
   .block-time { font-size:0.82rem; opacity:0.9; white-space:nowrap; position:relative; font-weight:600; }
   .block-icon { font-size:1.1rem; position:relative; }
 
-  /* edit mode hover */
   .edit-active .block, .edit-active .school-row { cursor:pointer; }
   .edit-active .block:hover, .edit-active .school-row:hover { filter:brightness(1.1); }
   .edit-active .add-btn { display:flex !important; }
@@ -64,7 +52,6 @@
   .add-btn { display:none !important; align-items:center; justify-content:center; gap:6px; border:2px dashed rgba(0,0,0,0.2); border-radius:12px; padding:9px 14px; margin-bottom:8px; background:transparent; width:100%; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; color:rgba(0,0,0,0.4); cursor:pointer; transition:all 0.2s; }
   .add-btn:hover { border-color:rgba(0,0,0,0.5); color:rgba(0,0,0,0.65); }
 
-  /* font sizes */
   body.size-lg .block-name { font-size:1.25rem; }
   body.size-lg .block-time { font-size:1rem; }
   body.size-lg .school-row { font-size:1.1rem; }
@@ -90,7 +77,6 @@
   .edit-banner.show { display:block; }
   .edit-banner span { color:#FFD700; }
 
-  /* modals */
   .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:16px; }
   .overlay.show { display:flex; }
   .modal { background:white; border-radius:24px; padding:28px 24px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto; }
@@ -117,21 +103,14 @@
   .save-toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:#2ecc71; color:white; padding:10px 24px; border-radius:50px; font-size:0.9rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:300; white-space:nowrap; }
   .save-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-  /* ── VIEW TOGGLE ── */
   .view-toggle { display:flex; justify-content:center; gap:8px; margin-bottom:20px; }
   .view-btn { background:white; border:2px solid #ddd; border-radius:50px; padding:8px 22px; font-family:'Noto Sans KR',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; color:var(--text); }
   .view-btn:hover,.view-btn.active { background:var(--text); color:white; border-color:var(--text); }
 
-  /* ── WEEKLY TABLE VIEW ── */
   .week-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
   .week-table { display:grid; grid-template-columns:repeat(5,minmax(160px,1fr)); gap:12px; min-width:820px; max-width:1400px; margin:0 auto; }
   .week-col { background:var(--card); border-radius:16px; padding:14px 12px; box-shadow:var(--shadow); }
-  
-  /* 주간보기 제목도 확대 연동 */
   .week-day-title { font-family:'Gmarket Sans',sans-serif; font-size:1rem; font-weight:700; text-align:center; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
-  body.size-lg .week-day-title { font-size: 1.15rem; }
-  body.size-xl .week-day-title { font-size: 1.3rem; }
-
   .week-badge { width:28px; height:28px; border-radius:8px; background:var(--text); color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900; flex-shrink:0; }
   .week-school { display:flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:7px 10px; margin-bottom:7px; font-weight:700; color:white; font-size:0.82rem; }
   .week-block { display:flex; flex-direction:column; border-radius:10px; padding:8px 10px; margin-bottom:7px; font-weight:600; position:relative; overflow:hidden; }
@@ -149,11 +128,9 @@
   body.size-xl .week-block-time { font-size:0.9rem; }
   body.size-xl .week-table { grid-template-columns:repeat(5,minmax(220px,1fr)); min-width:1140px; }
 
-  /* ── BOTTOM BAR ── */
   .bottom-bar { margin-top:36px; padding:24px 16px 16px; border-top:2px solid rgba(0,0,0,0.07); max-width:1200px; margin-left:auto; margin-right:auto; }
   .bottom-bar .view-toggle { margin-bottom:16px; }
 
-  /* ── size-xl TIME 2x ── */
   body.size-xl .block-time { font-size:1.4rem !important; }
   body.size-xl .school-row .school-time { font-size:1.4rem !important; }
   body.size-xl .week-block-time { font-size:1.3rem !important; }
@@ -167,14 +144,13 @@
 
 <header>
   <h1>🗓️ 지우 시간표</h1>
-  <p id="headerDate"></p>
+  <p id="headerDate" style="font-weight:700; color:#e74c3c; margin-top:10px; font-size:1.05rem;"></p>
 </header>
 
 <div class="controls">
   <button class="ctrl-btn active" onclick="setSize('normal',this)">보통</button>
   <button class="ctrl-btn" onclick="setSize('lg',this)">크게 🔍</button>
   <button class="ctrl-btn" onclick="setSize('xl',this)">매우 크게 👴👵</button>
-  <button class="ctrl-btn alarm-btn" onclick="exportCalendarAlarms()">🔔 폰 알람 등록</button>
 </div>
 
 <div class="notice-board" id="noticeBoard">
@@ -276,130 +252,36 @@
 
 <script>
 // ==========================================
-// 🔴 잊지 말고 여기에 구글 웹 앱 URL을 꼭 붙여넣으세요! 🔴
+// 🔴 여기에 발급받으신 구글 웹 앱 URL을 꼭 다시 붙여넣으세요! 🔴
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqfO0yo7pJMwsxQNRG7UPhmwCnJcF_uuvyGc5aN5E7lRO8ciO3hlyzUFKJaCQJnW-9/exec";
 // ==========================================
 
 const EDIT_PASSWORD = "1234";
-const STORAGE_KEY = "kidSchedule_v3";
-const NOTICE_KEY = "kidNotice_v3";
+const STORAGE_KEY = "kidSchedule_v4";
+const NOTICE_KEY = "kidNotice_v4";
 const PALETTE = ["#FF6B6B","#FF8E53","#F7B731","#26de81","#4ECDC4","#45B7D1","#a29bfe","#fd79a8","#e17055","#b2bec3","#6c5ce7","#00cec9","#fdcb6e","#55efc4","#fab1a0"];
 const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
-const DEFAULT = {
-  "월":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"english",  time:"1:40–2:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"math",     time:"2:50–4:30", label:"수학",      icon:"📐", color:"#45B7D1"},
-    {type:"home",     time:"4:30–5:15", label:"집",      icon:"🏠", color:"#b2bec3"},
-    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "화":[
-    {type:"school",   time:"2:20",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"soccer",   time:"2:30–3:55", label:"축구",      icon:"⚽", color:"#26de81"},
-    {type:"english",  time:"4:00–5:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "수":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"violin",   time:"1:40–2:30", label:"바이올린",  icon:"🎻", color:"#a29bfe"},
-    {type:"english",  time:"2:40–3:40", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"taekwondo",time:"4:30–5:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "목":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"english",  time:"1:40–3:00", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"hanuri",   time:"3:10–4:30", label:"한우리논술", icon:"📝", color:"#fd79a8"},
-    {type:"taekwondo",time:"5:30–6:20", label:"태권도",    icon:"🥋", color:"#F7B731"},
-  ],
-  "금":[
-    {type:"school",   time:"1:30",      label:"하교",      icon:"🏫", color:"#FF6B6B"},
-    {type:"english",  time:"1:40–2:45", label:"영어",      icon:"📚", color:"#4ECDC4"},
-    {type:"art",      time:"3:00–4:20", label:"미술",      icon:"🎨", color:"#e17055"},
-    {type:"home",     time:"4:30–5:40", label:"집",        icon:"🏠", color:"#b2bec3"},
-    {type:"swim",     time:"5:45–7:00", label:"수영",      icon:"🏊", color:"#00cec9"},
-  ],
-};
+// 기본값은 빈 상태로 시작합니다 (원하는 초기값 자유롭게 세팅 가능)
+const DEFAULT = { "월":[], "화":[], "수":[], "목":[], "금":[] };
 
 let schedule = JSON.parse(JSON.stringify(DEFAULT));
-let noticeText = "공지사항을 불러오지 못했습니다. 앱스크립트 주소를 확인해 주세요!";
+let noticeText = "공지사항을 불러오는 중입니다...";
 let editMode = false;
 let editTarget = null;
 let addDay = null;
 let selColor = PALETTE[0];
 let addSelColor = PALETTE[4];
 
-// ── 10분 전 스마트폰 캘린더 알람 내보내기 기능 ──
-function exportCalendarAlarms() {
-  if(!confirm("스마트폰 캘린더에 시간표를 10분 전 알람과 함께 등록할까요?\n\n※ 확인을 누른 후 다운로드된 파일을 열어 캘린더에 추가해주세요.")) return;
-
-  let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Jiwoo Timetable//KO\n";
-  const daysMap = {"월":"MO", "화":"TU", "수":"WE", "목":"TH", "금":"FR", "토":"SA", "일":"SU"};
-  const dayOffsets = {"일":0, "월":1, "화":2, "수":3, "목":4, "금":5, "토":6};
-
-  let now = new Date();
-  let sun = new Date(now.setDate(now.getDate() - now.getDay())); 
-
-  let parseTime = (str) => {
-    let parts = str.split(':').map(Number);
-    let h = parts[0] || 0;
-    let m = parts[1] || 0;
-    if (h >= 1 && h <= 7) h += 12; 
-    return {h, m};
-  };
-
-  let formatLocal = (date, t) => {
-    let y = date.getFullYear();
-    let mo = String(date.getMonth()+1).padStart(2,'0');
-    let d = String(date.getDate()).padStart(2,'0');
-    let hh = String(t.h).padStart(2,'0');
-    let mm = String(t.m).padStart(2,'0');
-    return `${y}${mo}${d}T${hh}${mm}00`;
-  };
-
-  Object.keys(schedule).forEach(day => {
-    schedule[day].forEach(item => {
-      let timeParts = item.time.split('–');
-      let startStr = timeParts[0].trim();
-      let endStr = timeParts.length > 1 ? timeParts[1].trim() : startStr;
-
-      let startT = parseTime(startStr);
-      let endT = parseTime(endStr);
-      if (timeParts.length === 1) endT.m += 30; 
-
-      let evDate = new Date(sun);
-      evDate.setDate(sun.getDate() + dayOffsets[day]);
-
-      ics += "BEGIN:VEVENT\n";
-      ics += `SUMMARY:${item.label} (${item.icon})\n`;
-      ics += `DTSTART;TZID=Asia/Seoul:${formatLocal(evDate, startT)}\n`;
-      ics += `DTEND;TZID=Asia/Seoul:${formatLocal(evDate, endT)}\n`;
-      ics += `RRULE:FREQ=WEEKLY;BYDAY=${daysMap[day]}\n`;
-      ics += "BEGIN:VALARM\nTRIGGER:-PT10M\nACTION:DISPLAY\nDESCRIPTION:10분 후 시작!\nEND:VALARM\n";
-      ics += "END:VEVENT\n";
-    });
-  });
-  ics += "END:VCALENDAR";
-
-  let blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-  let link = document.createElement('a');
-  link.href = window.URL.createObjectURL(blob);
-  link.download = "지우_시간표_알람.ics";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-// ── 상단 오늘 날짜 업데이트 (연도 제외) ──
 function updateHeaderDate() {
   const now = new Date();
+  const y = now.getFullYear();
   const m = now.getMonth() + 1;
   const d = now.getDate();
   const dayStr = dayNames[now.getDay()];
-  document.getElementById("headerDate").innerHTML = `📅 오늘: ${m}월 ${d}일 (${dayStr}요일)`;
+  document.getElementById("headerDate").innerHTML = `📅 오늘: ${y}년 ${m}월 ${d}일 (${dayStr}요일)`;
 }
 
-// ── 요일 자동 정렬 & 3/3부터 날짜 표기 로직 ──
 function getSortedDays() {
   const now = new Date();
   const actualDay = now.getDay();
@@ -407,13 +289,12 @@ function getSortedDays() {
   let todayIdx = actualDay;
   let daysToOffset = 0;
   
-  // 주말(토,일)에 앱을 열면 다음 주 월요일부터 보이게 세팅
-  if (actualDay === 0) { todayIdx = 1; daysToOffset = 1; } 
+  if (actualDay === 0) { todayIdx = 1; daysToOffset = 1; }
   else if (actualDay === 6) { todayIdx = 1; daysToOffset = 2; }
   
   const order = [];
   const dateMap = {};
-  const targetDays = [1, 2, 3, 4, 5]; 
+  const targetDays = [1, 2, 3, 4, 5];
   
   targetDays.sort((a, b) => {
     let distA = a >= todayIdx ? a - todayIdx : a - todayIdx + 7;
@@ -421,29 +302,17 @@ function getSortedDays() {
     return distA - distB;
   });
   
-  // 시작 기준일: 2026년 3월 3일 0시 0분 0초
-  const startDate = new Date(2026, 2, 3);
-  startDate.setHours(0,0,0,0);
-
   targetDays.forEach(d => {
     let dist = d >= todayIdx ? d - todayIdx : d - todayIdx + 7;
     let targetDate = new Date(now);
     targetDate.setDate(now.getDate() + daysToOffset + dist);
-    targetDate.setHours(0,0,0,0);
     
     let dayStr = dayNames[d];
     order.push(dayStr);
     
     let isToday = (dist === 0 && actualDay !== 0 && actualDay !== 6);
-    
-    // 3/3일(화)부터만 날짜를 표기하도록 조건 적용
-    let dateText = "";
-    if (targetDate.getTime() >= startDate.getTime()) {
-       dateText = `${targetDate.getMonth()+1}/${targetDate.getDate()}`;
-    }
-
     dateMap[dayStr] = { 
-      text: dateText,
+      text: `${targetDate.getMonth()+1}/${targetDate.getDate()}`,
       isToday: isToday
     };
   });
@@ -451,7 +320,6 @@ function getSortedDays() {
   return { order, dateMap };
 }
 
-// ── 데이터베이스 로드 ─────────────────────────
 async function loadData() {
   try {
     const res = await fetch(SCRIPT_URL);
@@ -464,9 +332,7 @@ async function loadData() {
       document.getElementById("noticeContent").textContent = "아직 등록된 공지사항이 없습니다.";
     }
     
-    if(data.schedule) {
-      schedule = JSON.parse(data.schedule);
-    }
+    if(data.schedule) schedule = JSON.parse(data.schedule);
     rerender();
   } catch(e) {
     console.error("구글 시트 연동 실패:", e);
@@ -477,7 +343,6 @@ async function loadData() {
   }
 }
 
-// ── 데이터베이스 저장 ─────────────────────────
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule)); 
   fetch(SCRIPT_URL, {
@@ -502,7 +367,6 @@ function saveNotice() {
   });
 }
 
-// ── View Mode ─────────────────────────────────
 let viewMode = "card";
 function setView(mode, btn) {
   viewMode = mode;
@@ -516,51 +380,42 @@ function setView(mode, btn) {
 function renderWeek() {
   const tbl = document.getElementById("weekTable");
   tbl.innerHTML = "";
-  
   const { order, dateMap } = getSortedDays();
 
   order.forEach(day => {
     const items = schedule[day] || [];
     const col = document.createElement("div");
     col.className = "week-col" + (editMode?" edit-active":"");
-    
     const dateInfo = dateMap[day];
     const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
     const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
-
-    // 날짜가 비어있지 않을 때만 span 태그 삽입
-    const dateHtmlWeek = dateInfo.text ? `<span class="week-date-text">(${dateInfo.text})</span>` : "";
 
     col.innerHTML = `
       <div class="week-day-title">
         <div class="week-badge" style="${bgCol}">${dateBadgeStr}</div>
         <span>${day}요일</span>
-        ${dateHtmlWeek}
+        <span style="font-size:0.8rem; color:#888; font-weight:600; margin-left:4px;">(${dateInfo.text})</span>
       </div>`;
       
     if(items){
       items.forEach((item, idx) => {
+        const el = document.createElement("div");
+        el.className = item.type === "school" ? "week-school" : "week-block";
+        el.style.background = item.color;
+        if(item.type !== "school") el.style.color = textColor(item.color);
+        
         if (item.type === "school") {
-          const el = document.createElement("div");
-          el.className = "week-school";
-          el.style.background = item.color;
           el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span style="margin-left:auto;font-size:0.75rem;opacity:0.85">${item.time}</span>`;
-          if (editMode) el.onclick = () => openEdit(day, idx);
-          col.appendChild(el);
         } else {
-          const el = document.createElement("div");
-          el.className = "week-block";
-          el.style.background = item.color;
-          el.style.color = textColor(item.color);
           el.innerHTML = `
             <div class="week-block-top">
               <span class="week-block-icon">${item.icon}</span>
               <span class="week-block-name">${item.label}</span>
             </div>
             <div class="week-block-time">${item.time}</div>`;
-          if (editMode) el.onclick = () => openEdit(day, idx);
-          col.appendChild(el);
         }
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        col.appendChild(el);
       });
     }
     if (editMode) {
@@ -576,7 +431,6 @@ function renderWeek() {
   renderLegend();
 }
 
-// ── Render ────────────────────────────────────
 function lum(hex) {
   const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
   return 0.299*r+0.587*g+0.114*b;
@@ -592,41 +446,32 @@ function rerender() {
 function render() {
   const grid = document.getElementById("schedule");
   grid.innerHTML = "";
-  
   const { order, dateMap } = getSortedDays();
 
   order.forEach(day => {
     const items = schedule[day] || [];
     const card = document.createElement("div");
     card.className = "day-card" + (editMode?" edit-active":"");
-    
     const dateInfo = dateMap[day];
     const dateBadgeStr = dateInfo.isToday ? "오늘" : day;
     const bgCol = dateInfo.isToday ? "background:#e74c3c" : "background:var(--text)";
 
-    // 날짜가 비어있지 않을 때만 span 태그 삽입
-    const dateHtml = dateInfo.text ? `<span class="day-date-text">(${dateInfo.text})</span>` : "";
-
-    card.innerHTML = `<div class="day-title"><div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>${day}요일 ${dateHtml}</div>`;
+    card.innerHTML = `<div class="day-title"><div class="day-badge" style="${bgCol}">${dateBadgeStr}</div>${day}요일 <span style="font-size:0.95rem; color:#888; font-weight:600; margin-left:6px;">(${dateInfo.text})</span></div>`;
 
     if(items){
       items.forEach((item, idx) => {
-        if (item.type === "school") {
-          const el = document.createElement("div");
-          el.className = "school-row";
-          el.style.background = item.color;
+        const el = document.createElement("div");
+        el.className = item.type === "school" ? "school-row" : "block";
+        el.style.background = item.color;
+        if(item.type !== "school") el.style.color = textColor(item.color);
+        
+        if(item.type === "school"){
           el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
-          if (editMode) el.onclick = () => openEdit(day, idx);
-          card.appendChild(el);
         } else {
-          const el = document.createElement("div");
-          el.className = "block";
-          el.style.background = item.color;
-          el.style.color = textColor(item.color);
           el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
-          if (editMode) el.onclick = () => openEdit(day, idx);
-          card.appendChild(el);
         }
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        card.appendChild(el);
       });
     }
 
@@ -648,7 +493,6 @@ function renderLegend() {
   seen.forEach((c,l) => { leg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`; });
 }
 
-// ── Edit Mode ─────────────────────────────────
 function toggleEdit() {
   if (!editMode) {
     document.getElementById("pwOverlay").classList.add("show");
@@ -677,13 +521,11 @@ function exitEdit() {
   rerender();
 }
 
-// ── Notice Edit ───────────────────────────────
 function openNoticeEdit() {
   document.getElementById("editNoticeText").value = noticeText;
   document.getElementById("noticeOverlay").classList.add("show");
 }
 
-// ── Color Grid ────────────────────────────────
 function buildColors(id, current, cb) {
   const g = document.getElementById(id);
   g.innerHTML = "";
@@ -696,7 +538,6 @@ function buildColors(id, current, cb) {
   });
 }
 
-// ── Edit Block ────────────────────────────────
 function openEdit(day, idx) {
   editTarget = {day, idx};
   const item = schedule[day][idx];
@@ -709,46 +550,138 @@ function openEdit(day, idx) {
   buildColors("colorGrid", selColor, c=>{ selColor=c; });
   document.getElementById("editOverlay").classList.add("show");
 }
-function saveBlock() {
+
+// 📌 [수정됨] 기존 블록 업데이트 & 구글 캘린더 동기화 로직
+async function saveBlock() {
   if (!editTarget) return;
   const item = schedule[editTarget.day][editTarget.idx];
   const name  = document.getElementById("editName").value.trim();
   if (!name) return;
   const start = document.getElementById("editStart").value.trim();
   const end   = document.getElementById("editEnd").value.trim();
+
+  const oldEventId = item.eventId; // 기존 캘린더 ID 백업
+
   item.label = name;
   item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
   item.color = selColor;
   item.time  = end ? `${start}–${end}` : start;
-  save(); closeOverlay("editOverlay"); 
-}
-function deleteBlock() {
-  if (!editTarget) return;
-  schedule[editTarget.day].splice(editTarget.idx, 1);
-  save(); closeOverlay("editOverlay"); 
+
+  closeOverlay("editOverlay");
+  toast("⏳ 캘린더 일정 수정 중...");
+  rerender(); // UI 먼저 업데이트
+
+  try {
+    const dayIndex = dayNames.indexOf(editTarget.day);
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'calendar_update', // 수정 요청
+        eventId: oldEventId,       // 지울 기존 ID 전송
+        title: name,
+        dayIndex: dayIndex,
+        startTime: start,
+        endTime: end
+      })
+    });
+    const data = await res.json();
+    if(data.eventId) {
+      item.eventId = data.eventId; // 새로 발급된 ID 저장
+    }
+  } catch(e) {
+     console.error("캘린더 알람 수정 에러:", e);
+  }
+  
+  save(); // 최종적으로 변경된 ID가 포함된 스케줄 시트에 저장
 }
 
-// ── Add Block ─────────────────────────────────
+// 📌 [수정됨] 삭제 시 구글 캘린더 동기화 로직 추가
+async function deleteBlock() {
+  if (!editTarget) return;
+  if(confirm("이 일정을 삭제하시겠습니까?\n(자동으로 구글 캘린더 알람도 함께 삭제됩니다.)")) {
+    const item = schedule[editTarget.day][editTarget.idx];
+    const eventIdToDelete = item.eventId;
+
+    schedule[editTarget.day].splice(editTarget.idx, 1);
+    closeOverlay("editOverlay"); 
+    toast("⏳ 캘린더 일정 삭제 중...");
+    rerender();
+    
+    // 캘린더에 저장된 ID가 있다면 삭제 요청 전송
+    if (eventIdToDelete) {
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'calendar_delete',
+            eventId: eventIdToDelete
+          })
+        });
+      } catch(e) {
+        console.error("캘린더 알람 삭제 에러:", e);
+      }
+    }
+    
+    save(); // 삭제 반영본 시트에 저장
+  }
+}
+
 function openAdd(day) {
   addDay = day; addSelColor = PALETTE[4];
   ["addName","addIcon","addStart","addEnd"].forEach(id=>document.getElementById(id).value="");
   buildColors("addColorGrid", addSelColor, c=>{ addSelColor=c; });
   document.getElementById("addOverlay").classList.add("show");
 }
-function saveAdd() {
+
+// 📌 [수정됨] 일정 추가 시 발급된 ID를 기억하도록 변경
+async function saveAdd() {
   const name  = document.getElementById("addName").value.trim();
   if (!name) return;
   const icon  = document.getElementById("addIcon").value.trim()||"📌";
   const start = document.getElementById("addStart").value.trim();
   const end   = document.getElementById("addEnd").value.trim();
   
+  const dayIndex = dayNames.indexOf(addDay);
+  const timeStr = end ? `${start}–${end}` : start;
+  
+  // 새 항목 객체 생성
+  const newItem = { type:name, label:name, icon:icon, color:addSelColor, time:timeStr };
+
   if(!schedule[addDay]) schedule[addDay] = [];
-  schedule[addDay].push({ type:name, label:name, icon, color:addSelColor, time:end?`${start}–${end}`:start });
+  schedule[addDay].push(newItem);
   schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
-  save(); closeOverlay("addOverlay"); 
+  
+  closeOverlay("addOverlay"); 
+  toast("⏳ 캘린더에 연동 중입니다...");
+  rerender(); // UI 선 반영
+
+  // 백엔드로 추가 요청 및 ID 받아오기
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'calendar_add',
+        title: name,
+        dayIndex: dayIndex,
+        startTime: start,
+        endTime: end
+      })
+    });
+    const data = await res.json();
+    if(data.eventId) {
+      newItem.eventId = data.eventId; // 구글 캘린더 고유 ID 추가
+    }
+  } catch(e) {
+    console.error("캘린더 알람 등록 에러:", e);
+  }
+
+  // ID 포함해서 구글 시트에 최종 저장
+  save(); 
 }
 
-// ── Utils ─────────────────────────────────────
 function t2m(t) { const s=t.split("–")[0],[h,m]=s.split(":").map(Number); return (h||0)*60+(m||0); }
 function closeOverlay(id) { document.getElementById(id).classList.remove("show"); }
 function setSize(s, btn) {
@@ -762,7 +695,6 @@ function toast(msg="✅ 저장됐어요!") {
   t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200);
 }
 
-// ── Init ──────────────────────────────────────
 updateHeaderDate();
 loadData();
 </script>
