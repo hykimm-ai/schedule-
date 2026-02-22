@@ -397,4 +397,158 @@ function render() {
         el.className = "school-row";
         el.style.background = item.color;
         el.innerHTML = `<span>${item.icon}</span><span>${item.label}</span><span class="school-time">${item.time}</span>`;
-        if (editMode) el.
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        card.appendChild(el);
+      } else {
+        const el = document.createElement("div");
+        el.className = "block";
+        el.style.background = item.color;
+        el.style.color = textColor(item.color);
+        el.innerHTML = `<span class="block-icon">${item.icon}</span><span class="block-name">${item.label}</span><span class="block-time">${item.time}</span>`;
+        if (editMode) el.onclick = () => openEdit(day, idx);
+        card.appendChild(el);
+      }
+    });
+
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-btn";
+    addBtn.textContent = "+ 일정 추가";
+    addBtn.onclick = () => openAdd(day);
+    card.appendChild(addBtn);
+    grid.appendChild(card);
+  });
+  renderLegend();
+}
+
+function renderLegend() {
+  const seen = new Map();
+  Object.values(schedule).flat().forEach(i => { if(!seen.has(i.label)) seen.set(i.label,i.color); });
+  const leg = document.getElementById("legend");
+  leg.innerHTML = "";
+  seen.forEach((c,l) => { leg.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`; });
+}
+
+// ── Edit Mode ─────────────────────────────────
+function toggleEdit() {
+  if (!editMode) {
+    document.getElementById("pwOverlay").classList.add("show");
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwError").textContent = "";
+    setTimeout(()=>document.getElementById("pwInput").focus(),100);
+  } else exitEdit();
+}
+function checkPw() {
+  if (document.getElementById("pwInput").value === EDIT_PASSWORD) {
+    closeOverlay("pwOverlay");
+    editMode = true;
+    document.getElementById("editBanner").classList.add("show");
+    document.getElementById("editFab").classList.add("active");
+    document.getElementById("editFab").textContent = "🔒";
+    rerender();
+  } else {
+    document.getElementById("pwError").textContent = "❌ 비밀번호가 틀렸습니다";
+  }
+}
+function exitEdit() {
+  editMode = false;
+  document.getElementById("editBanner").classList.remove("show");
+  document.getElementById("editFab").classList.remove("active");
+  document.getElementById("editFab").textContent = "✏️";
+  rerender();
+}
+
+// ── Notice Edit ───────────────────────────────
+function openNoticeEdit() {
+  document.getElementById("editNoticeText").value = noticeText;
+  document.getElementById("noticeOverlay").classList.add("show");
+}
+function saveNotice() {
+  noticeText = document.getElementById("editNoticeText").value;
+  document.getElementById("noticeContent").textContent = noticeText || "공지사항이 없습니다.";
+  try { localStorage.setItem(NOTICE_KEY, noticeText); } catch(e){}
+  closeOverlay("noticeOverlay");
+  toast("✅ 공지사항이 저장됐어요!");
+}
+
+// ── Color Grid ────────────────────────────────
+function buildColors(id, current, cb) {
+  const g = document.getElementById(id);
+  g.innerHTML = "";
+  PALETTE.forEach(c => {
+    const d = document.createElement("div");
+    d.className = "color-opt"+(c===current?" selected":"");
+    d.style.background = c;
+    d.onclick = () => { g.querySelectorAll(".color-opt").forEach(x=>x.classList.remove("selected")); d.classList.add("selected"); cb(c); };
+    g.appendChild(d);
+  });
+}
+
+// ── Edit Block ────────────────────────────────
+function openEdit(day, idx) {
+  editTarget = {day, idx};
+  const item = schedule[day][idx];
+  selColor = item.color;
+  document.getElementById("editName").value  = item.label;
+  document.getElementById("editIcon").value  = item.icon;
+  const parts = item.time.split("–");
+  document.getElementById("editStart").value = parts[0]||"";
+  document.getElementById("editEnd").value   = parts[1]||"";
+  buildColors("colorGrid", selColor, c=>{ selColor=c; });
+  document.getElementById("editOverlay").classList.add("show");
+}
+function saveBlock() {
+  if (!editTarget) return;
+  const item = schedule[editTarget.day][editTarget.idx];
+  const name  = document.getElementById("editName").value.trim();
+  if (!name) return;
+  const start = document.getElementById("editStart").value.trim();
+  const end   = document.getElementById("editEnd").value.trim();
+  item.label = name;
+  item.icon  = document.getElementById("editIcon").value.trim() || item.icon;
+  item.color = selColor;
+  item.time  = end ? `${start}–${end}` : start;
+  save(); closeOverlay("editOverlay"); rerender(); toast("✅ 저장됐어요!");
+}
+function deleteBlock() {
+  if (!editTarget) return;
+  schedule[editTarget.day].splice(editTarget.idx, 1);
+  save(); closeOverlay("editOverlay"); rerender(); toast("🗑️ 삭제됐어요!");
+}
+
+// ── Add Block ─────────────────────────────────
+function openAdd(day) {
+  addDay = day; addSelColor = PALETTE[4];
+  ["addName","addIcon","addStart","addEnd"].forEach(id=>document.getElementById(id).value="");
+  buildColors("addColorGrid", addSelColor, c=>{ addSelColor=c; });
+  document.getElementById("addOverlay").classList.add("show");
+}
+function saveAdd() {
+  const name  = document.getElementById("addName").value.trim();
+  if (!name) return;
+  const icon  = document.getElementById("addIcon").value.trim()||"📌";
+  const start = document.getElementById("addStart").value.trim();
+  const end   = document.getElementById("addEnd").value.trim();
+  schedule[addDay].push({ type:name, label:name, icon, color:addSelColor, time:end?`${start}–${end}`:start });
+  schedule[addDay].sort((a,b)=>t2m(a.time)-t2m(b.time));
+  save(); closeOverlay("addOverlay"); rerender(); toast("✅ 추가됐어요!");
+}
+
+// ── Utils ─────────────────────────────────────
+function t2m(t) { const s=t.split("–")[0],[h,m]=s.split(":").map(Number); return (h||0)*60+(m||0); }
+function closeOverlay(id) { document.getElementById(id).classList.remove("show"); }
+function setSize(s, btn) {
+  document.body.classList.remove("size-lg","size-xl");
+  if(s!=="normal") document.body.classList.add("size-"+s);
+  document.querySelectorAll(".ctrl-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+function toast(msg="✅ 저장됐어요!") {
+  const t=document.getElementById("toast"); t.textContent=msg;
+  t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+// ── Init ──────────────────────────────────────
+load(); rerender();
+</script>
+</body>
+</html>
